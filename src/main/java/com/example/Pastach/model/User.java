@@ -1,10 +1,18 @@
 package com.example.Pastach.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(of = {"email"})
 public class User {
     private String email;
     private String nickname;
@@ -12,30 +20,7 @@ public class User {
     @JsonFormat(pattern = "dd.MM.yyyy") // we should add a dependency
     private LocalDate birthday;
 
-    public User(String email, String nickname, LocalDate birthday) {
-        this.email = email;
-        this.nickname = nickname;
-        this.birthday = birthday;
-    }
-
-    public User() {
-
-    }
-
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public LocalDate getBirthday() {
-        return birthday;
-    }
-
-    @Override
+/*    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj != null && obj.getClass() == User.class) {
@@ -47,7 +32,6 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hash(email);
-    }
+//        return Objects.hash(email); */
 }
 

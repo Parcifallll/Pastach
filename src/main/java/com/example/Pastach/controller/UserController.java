@@ -35,12 +35,13 @@ public class UserController {
     @PostMapping("/user")
     public User create(@RequestBody User user) { // the annotation reports Spring to de-serialize a JSON to Java object (User)
         // User user = Gson.toJson(user, User.class); without an annotation
-        if (user.getEmail() == null || Objects.equals(user.getEmail(), "") || !user.getEmail().contains("@")) {
+        if (user.getEmail() == null || user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
             throw new InvalidEmailException("Invalid email address: " + user.getEmail());
         }
         if (users.contains(user)) { // compare emails
             throw new UserAlreadyExistException("User " + user.getNickname() + " already exists");
         }
+        users.add(user);
         return user;
     }
 }

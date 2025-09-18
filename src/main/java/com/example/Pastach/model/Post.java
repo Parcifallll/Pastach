@@ -1,12 +1,18 @@
 package com.example.Pastach.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.Instant;
 
+@Getter
 public class Post { // Post-entity
 
     private final String author;
     private final Instant creationDate = Instant.now();
+    @Setter
     private String text;
+    @Setter
     private String photoUrl;
 
     public Post(String author, String text, String photoUrl) {
@@ -15,28 +21,5 @@ public class Post { // Post-entity
         this.photoUrl = photoUrl;
     }
 
-    public String getAuthor() {
-        return author;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public Instant getCreationDate() {
-        return creationDate;
-    }
-
-    public String getPhotoUrl (){
-        return photoUrl;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public void setPhotoUrl (String photoUrl) {
-        this.photoUrl = photoUrl;
-    }
 
 }
