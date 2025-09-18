@@ -27,7 +27,16 @@ public class Post { // Post-entity
         return creationDate;
     }
 
+    public String getPhotoUrl (){
+        return photoUrl;
+    }
+
     public void setText(String text) {
         this.text = text;
     }
+
+    public void setPhotoUrl (String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
 }
