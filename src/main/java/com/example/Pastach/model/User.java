@@ -1,10 +1,13 @@
 package com.example.Pastach.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -14,6 +17,9 @@ import java.util.Objects;
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"email"})
 public class User {
+    @NonNull
+    @NotBlank
+    @Email
     private String email;
     private String nickname;
 

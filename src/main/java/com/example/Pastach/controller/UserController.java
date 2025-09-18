@@ -3,6 +3,7 @@ package com.example.Pastach.controller;
 import com.example.Pastach.exception.InvalidEmailException;
 import com.example.Pastach.exception.UserAlreadyExistException;
 import com.example.Pastach.model.User;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,19 +27,19 @@ public class UserController {
     @PutMapping("/users") // update info
     public User update(@RequestBody User user) {
         if (user.getEmail() == null || Objects.equals(user.getEmail(), "") || !user.getEmail().contains("@")) {
-            throw new UserAlreadyExistException("Invalid email address: " + user.getEmail());
+            throw new InvalidEmailException("Invalid email address: " + user.getEmail());
         }
         users.add(user);
         return user; // in PUT and POST requests it is better to return the object/smth to confirm the success
     }
 
     @PostMapping("/user")
-    public User create(@RequestBody User user) { // the annotation reports Spring to de-serialize a JSON to Java object (User)
+    public User create(@Valid @RequestBody User user) { // the annotation reports Spring to de-serialize a JSON to Java object (User)
         // User user = Gson.toJson(user, User.class); without an annotation
         if (user.getEmail() == null || user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
             throw new InvalidEmailException("Invalid email address: " + user.getEmail());
         }
-        if (users.contains(user)) { // compare emails
+         if (users.contains(user)) { // compare emails
             throw new UserAlreadyExistException("User " + user.getNickname() + " already exists");
         }
         users.add(user);
