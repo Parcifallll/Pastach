@@ -7,7 +7,8 @@ import java.time.Instant;
 
 @Getter
 public class Post { // Post-entity
-
+    @Setter
+    private Integer id;
     private final String author;
     private final Instant creationDate = Instant.now();
     @Setter
@@ -15,7 +16,8 @@ public class Post { // Post-entity
     @Setter
     private String photoUrl;
 
-    public Post(String author, String text, String photoUrl) {
+    public Post(Integer id, String author, String text, String photoUrl) {
+        this.id = id;
         this.author = author;
         this.text = text;
         this.photoUrl = photoUrl;
