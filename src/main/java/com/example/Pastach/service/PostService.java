@@ -3,6 +3,9 @@ package com.example.Pastach.service;
 import com.example.Pastach.model.Post;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 
@@ -18,9 +21,9 @@ public class PostService {
         return posts;
     }
 
-    public List<Post> searchPosts(String author) {
+    public List<Post> searchPosts(String author, LocalDate creationDate) {
         return posts.stream()
-                .filter(x -> Objects.equals(x.getAuthor(), author)).toList();
+                .filter(x -> x.getAuthor().equals(author) && !x.getCreationDate().toLocalDate().isBefore(creationDate)).toList();
     }
     public Optional<Post> findById(int postId) {
         return posts.stream()
