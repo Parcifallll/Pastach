@@ -2,11 +2,13 @@ package com.example.Pastach.service;
 
 import com.example.Pastach.exception.InvalidEmailException;
 import com.example.Pastach.exception.UserAlreadyExistException;
+import com.example.Pastach.exception.UserNotFoundException;
 import com.example.Pastach.model.User;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -25,8 +27,7 @@ public class UserService {
         return user; // in PUT and POST requests it is better to return the object/smth to confirm the success
     }
 
-    public User create(User user) { // the annotation reports Spring to de-serialize a JSON to Java object (User)
-        // User user = Gson.toJson(user, User.class); without an annotation
+    public User create(User user) {
         if (user.getEmail() == null || user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
             throw new InvalidEmailException("Invalid email address: " + user.getEmail());
         }
@@ -35,5 +36,12 @@ public class UserService {
         }
         users.add(user);
         return user;
+    }
+
+    public Optional<User> findById(int id) {
+        return Optional.ofNullable(users.stream()
+                .filter(x -> x.getId() == (id))
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with id \"%s\" not found", id))));
     }
 }

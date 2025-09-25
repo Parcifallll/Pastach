@@ -1,5 +1,6 @@
 package com.example.Pastach.service;
 
+import com.example.Pastach.exception.PostNotFoundException;
 import com.example.Pastach.model.Post;
 import org.springframework.stereotype.Service;
 
@@ -26,9 +27,10 @@ public class PostService {
                 .filter(x -> x.getAuthor().equals(author) && !x.getCreationDate().toLocalDate().isBefore(creationDate)).toList();
     }
     public Optional<Post> findById(int postId) {
-        return posts.stream()
+        return Optional.ofNullable(posts.stream()
                 .filter(x -> Objects.equals(x.getId(), postId))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new PostNotFoundException(String.format("Post with id \"%s\" not found", postId))));
     }
 
 
