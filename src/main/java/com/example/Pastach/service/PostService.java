@@ -30,7 +30,7 @@ public class PostService {
         return Optional.ofNullable(posts.stream()
                 .filter(x -> Objects.equals(x.getId(), postId))
                 .findFirst()
-                .orElseThrow(() -> new PostNotFoundException(String.format("Post with id \"%s\" not found", postId))));
+                .orElseThrow(() -> new PostNotFoundException("Post with id " + postId + " is not found")));
     }
 
 

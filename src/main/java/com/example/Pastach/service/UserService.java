@@ -38,10 +38,10 @@ public class UserService {
         return user;
     }
 
-    public Optional<User> findById(int id) {
+    public Optional<User> findById(int userId) {
         return Optional.ofNullable(users.stream()
-                .filter(x -> x.getId() == (id))
+                .filter(x -> x.getId() == (userId))
                 .findFirst()
-                .orElseThrow(() -> new UserNotFoundException(String.format("User with id \"%s\" not found", id))));
+                .orElseThrow(() -> new UserNotFoundException("User with id " + userId + " is not found")));
     }
 }
