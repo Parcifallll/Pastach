@@ -14,7 +14,7 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 public class Post { // Post-entity
     @Setter
-    private Integer id;
+    private int id;
     private final String author;
     @JsonFormat(pattern = "dd.MM.yyyy HH:mm:ss")
     private final LocalDateTime creationDate = LocalDateTime.now();

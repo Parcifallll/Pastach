@@ -7,9 +7,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -30,13 +29,22 @@ public class PostController { //manage Posts
         return postService.findById(postId);
     }
     @GetMapping("/posts") // endpoint
-    public List<Post> findAll() {
+    public Map<Integer, Post> findAll() {
         return postService.findAll();
     }
-
 
     @PostMapping(value = "/post") // endpoint
     public Post create(@RequestBody Post post) {
         return postService.create(post);
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    public Optional<Post> deleteById(@PathVariable int postId){
+        return postService.deleteById(postId);
+    }
+
+    @PutMapping("/posts/{postId}")
+    public Post updateById(@RequestBody Post post, @PathVariable int postId){
+        return postService.updateById(post, postId);
     }
 }
