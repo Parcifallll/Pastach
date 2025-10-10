@@ -19,7 +19,7 @@ public class User {
     private String email;
     private String nickname;
     @Setter
-    private int id;
+    private int id; 
 
     @JsonFormat(pattern = "dd.MM.yyyy") // we should add a dependency
     private LocalDate birthday;

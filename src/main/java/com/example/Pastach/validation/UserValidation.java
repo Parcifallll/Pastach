@@ -20,7 +20,7 @@ public class UserValidation {
         }
     }
 
-    public static void validateUserExists(Map<Integer, User> users, Integer userId) {
+    public static void validateUserExists(Map<Integer, User> users, int userId) {
         if (!users.containsKey(userId)) {
             throw new UserNotFoundException("User with id " + userId + " is not found");
         }

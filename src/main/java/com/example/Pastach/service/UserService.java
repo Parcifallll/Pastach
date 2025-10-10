@@ -12,21 +12,28 @@ import java.util.*;
 @Service
 public class UserService {
     private Map<Integer, User> users = new HashMap<>();
+    int nextId = 1;
 
     public Map<Integer, User> findAll() {
         return users;
     }
 
-    public User update(User user) {
-        UserValidation.validateEmail(user.getEmail());
-        UserValidation.validateUserAlreadyExists(users, user);
+    public User updateById(User user, int userId) {
+        UserValidation.validateUserExists(users, userId);
+        if (!user.getEmail().equals(users.get(userId).getEmail())) {
+            UserValidation.validateEmail(user.getEmail());
+            UserValidation.validateUserAlreadyExists(users, user);
+        }
+        user.setId(userId);
+        users.put(userId, user);
         return user; // in PUT and POST requests it is better to return the object/smth to confirm the success
     }
 
     public User create(User user) {
         UserValidation.validateEmail(user.getEmail());
         UserValidation.validateUserAlreadyExists(users, user);
-        user.setId(users.size() + 1);
+        user.setId(nextId);
+        nextId++;
         users.put(user.getId(), user);
         return user;
     }
