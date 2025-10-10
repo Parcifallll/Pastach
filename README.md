@@ -1,4 +1,4 @@
-DataBase Structure
+# DataBase Structure
 ## ER-diagram (includes user, post):
 
 ![ER-diagram](ER-diagram.png)
