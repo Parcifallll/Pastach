@@ -1,0 +1,7 @@
+package com.example.Pastach.storage.user;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class InMemoryUserStorage {
+}

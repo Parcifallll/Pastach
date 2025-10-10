@@ -35,6 +35,7 @@ public class PostService {
 
 
     public Post create(Post post) {
+
         posts.add(post);
         return post;
     }

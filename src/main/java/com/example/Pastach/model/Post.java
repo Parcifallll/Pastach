@@ -1,6 +1,7 @@
 package com.example.Pastach.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @Getter
+@AllArgsConstructor
 public class Post { // Post-entity
     @Setter
     private Integer id;
@@ -20,13 +22,4 @@ public class Post { // Post-entity
     private String text;
     @Setter
     private String photoUrl;
-
-    public Post(Integer id, String author, String text, String photoUrl) {
-        this.id = id;
-        this.author = author;
-        this.text = text;
-        this.photoUrl = photoUrl;
-    }
-
-
 }

@@ -4,44 +4,42 @@ import com.example.Pastach.exception.InvalidEmailException;
 import com.example.Pastach.exception.UserAlreadyExistException;
 import com.example.Pastach.exception.UserNotFoundException;
 import com.example.Pastach.model.User;
+import com.example.Pastach.validation.UserValidation;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UserService {
-    private Set<User> users = new HashSet<>();
+    private Map<Integer, User> users = new HashMap<>();
 
-    public Set<User> findAll() {
+    public Map<Integer, User> findAll() {
         return users;
     }
 
     public User update(User user) {
-        if (user.getEmail() == null || Objects.equals(user.getEmail(), "") || !user.getEmail().contains("@")) {
-            throw new InvalidEmailException("Invalid email address: " + user.getEmail());
-        }
-        users.add(user);
+        UserValidation.validateEmail(user.getEmail());
+        UserValidation.validateUserAlreadyExists(users, user);
         return user; // in PUT and POST requests it is better to return the object/smth to confirm the success
     }
 
     public User create(User user) {
-        if (user.getEmail() == null || user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
-            throw new InvalidEmailException("Invalid email address: " + user.getEmail());
-        }
-        if (users.contains(user)) { // compare emails
-            throw new UserAlreadyExistException("User " + user.getNickname() + " already exists");
-        }
-        users.add(user);
+        UserValidation.validateEmail(user.getEmail());
+        UserValidation.validateUserAlreadyExists(users, user);
+        user.setId(users.size() + 1);
+        users.put(user.getId(), user);
         return user;
     }
 
+    public Optional<User> deleteById(int userId) {
+        UserValidation.validateUserExists(users, userId);
+        User deletedUser = users.get(userId);
+        users.remove(userId);
+        return Optional.ofNullable(deletedUser);
+    }
+
     public Optional<User> findById(int userId) {
-        return Optional.ofNullable(users.stream()
-                .filter(x -> x.getId() == (userId))
-                .findFirst()
-                .orElseThrow(() -> new UserNotFoundException("User with id " + userId + " is not found")));
+        UserValidation.validateUserExists(users, userId);
+        return Optional.ofNullable(users.get(userId));
     }
 }
