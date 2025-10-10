@@ -21,7 +21,7 @@ public class PostController { //manage Posts
     }
 
     @GetMapping("posts/search") // http://localhost:8080/posts/search?author=Roman
-    public List<Post> searchPosts(@RequestParam String author, @RequestParam @DateTimeFormat(pattern="dd.MM.yyyy") LocalDate creationDate) {
+    public Map<Integer, Post> searchPosts(@RequestParam String author, @RequestParam @DateTimeFormat(pattern="dd.MM.yyyy") LocalDate creationDate) {
         return postService.searchPosts(author, creationDate);
     }
     @GetMapping("/posts/{postId}") // http://localhost:8080/posts/12

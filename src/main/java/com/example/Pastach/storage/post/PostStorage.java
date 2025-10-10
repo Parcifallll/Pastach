@@ -4,17 +4,18 @@ import com.example.Pastach.exception.PostNotFoundException;
 import com.example.Pastach.model.Post;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public interface PostStorage {
-    List<Post> findAll();
+    Map<Integer, Post> findAll();
+
+    Map<Integer, Post> searchPosts(String author, LocalDate creationDate);
 
     Optional<Post> findById(int postId);
 
-    List<Post> searchPosts(String author, LocalDate creationDate);
-
     Post create(Post post);
+
+    Optional<Post> deleteById(int postId);
+
+    Post updateById(Post post, int postId);
 }
