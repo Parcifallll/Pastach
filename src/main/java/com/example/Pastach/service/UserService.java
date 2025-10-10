@@ -1,9 +1,7 @@
 package com.example.Pastach.service;
 
-import com.example.Pastach.exception.InvalidEmailException;
-import com.example.Pastach.exception.UserAlreadyExistException;
-import com.example.Pastach.exception.UserNotFoundException;
 import com.example.Pastach.model.User;
+import com.example.Pastach.storage.user.InMemoryUserStorage;
 import com.example.Pastach.validation.UserValidation;
 import org.springframework.stereotype.Service;
 
@@ -11,42 +9,39 @@ import java.util.*;
 
 @Service
 public class UserService {
-    private Map<Integer, User> users = new HashMap<>();
-    int nextId = 1;
+    private final InMemoryUserStorage inMemoryUserStorage;
+
+    public UserService(InMemoryUserStorage inMemoryUserStorage) {
+        this.inMemoryUserStorage = inMemoryUserStorage;
+    }
 
     public Map<Integer, User> findAll() {
-        return users;
+        return inMemoryUserStorage.findAll();
     }
 
     public User updateById(User user, int userId) {
-        UserValidation.validateUserExists(users, userId);
-        if (!user.getEmail().equals(users.get(userId).getEmail())) {
+        UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
+        if (!user.getEmail().equals(inMemoryUserStorage.findAll().get(userId).getEmail())) {
             UserValidation.validateEmail(user.getEmail());
-            UserValidation.validateUserAlreadyExists(users, user);
+            UserValidation.validateUserAlreadyExists(inMemoryUserStorage.findAll(), user);
         }
-        user.setId(userId);
-        users.put(userId, user);
-        return user; // in PUT and POST requests it is better to return the object/smth to confirm the success
+        return inMemoryUserStorage.updateById(user, userId); // in PUT and POST requests it is better to return the object/smth to confirm the success
     }
 
     public User create(User user) {
         UserValidation.validateEmail(user.getEmail());
-        UserValidation.validateUserAlreadyExists(users, user);
-        user.setId(nextId);
-        nextId++;
-        users.put(user.getId(), user);
-        return user;
+        UserValidation.validateUserAlreadyExists(findAll(), user);
+        return inMemoryUserStorage.create(user);
+
     }
 
     public Optional<User> deleteById(int userId) {
-        UserValidation.validateUserExists(users, userId);
-        User deletedUser = users.get(userId);
-        users.remove(userId);
-        return Optional.ofNullable(deletedUser);
+        UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
+        return inMemoryUserStorage.deleteById(userId);
     }
 
     public Optional<User> findById(int userId) {
-        UserValidation.validateUserExists(users, userId);
-        return Optional.ofNullable(users.get(userId));
+        UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
+        return inMemoryUserStorage.findById(userId);
     }
 }
