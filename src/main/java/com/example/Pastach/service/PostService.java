@@ -1,6 +1,5 @@
 package com.example.Pastach.service;
 
-import com.example.Pastach.exception.PostNotFoundException;
 import com.example.Pastach.model.Post;
 import com.example.Pastach.storage.post.InMemoryPostStorage;
 import com.example.Pastach.validation.PostValidation;
@@ -10,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class PostService {
