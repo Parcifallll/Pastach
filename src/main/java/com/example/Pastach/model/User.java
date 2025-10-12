@@ -17,7 +17,7 @@ public class User {
     @NotBlank
     @Email
     private String email;
-    private String userName;
+    private String userName = "no_name";
     @Setter
     @NonNull
     @NotBlank
