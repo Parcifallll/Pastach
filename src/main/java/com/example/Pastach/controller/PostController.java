@@ -15,19 +15,20 @@ import java.util.Optional;
 public class PostController { //manage Posts
     private final PostService postService;
 
-    @Autowired
     public PostController(PostService postService) { // DI
         this.postService = postService;
     }
 
     @GetMapping("posts/search") // http://localhost:8080/posts/search?author=Roman
-    public Map<Integer, Post> searchPosts(@RequestParam String author, @RequestParam @DateTimeFormat(pattern="dd.MM.yyyy") LocalDate creationDate) {
+    public Map<Integer, Post> searchPosts(@RequestParam String author, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") LocalDate creationDate) {
         return postService.searchPosts(author, creationDate);
     }
+
     @GetMapping("/posts/{postId}") // http://localhost:8080/posts/12
     public Optional<Post> findById(@PathVariable int postId) {
         return postService.findById(postId);
     }
+
     @GetMapping("/posts") // endpoint
     public Map<Integer, Post> findAll() {
         return postService.findAll();
@@ -39,12 +40,12 @@ public class PostController { //manage Posts
     }
 
     @DeleteMapping("/posts/{postId}")
-    public Optional<Post> deleteById(@PathVariable int postId){
+    public Optional<Post> deleteById(@PathVariable int postId) {
         return postService.deleteById(postId);
     }
 
     @PutMapping("/posts/{postId}")
-    public Post updateById(@RequestBody Post post, @PathVariable int postId){
+    public Post updateById(@RequestBody Post post, @PathVariable int postId) {
         return postService.updateById(post, postId);
     }
 }

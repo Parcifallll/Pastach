@@ -10,14 +10,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
-    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
+    /*
     @GetMapping("/users")
     public Map<String, User> findAll() {
         return userService.findAll();
@@ -37,10 +38,10 @@ public class UserController {
     public Optional<User> deleteById(@PathVariable String userId) {
         return userService.deleteById(userId);
     }
-
-    @GetMapping("users/{userId}")
-    public Optional<User> findById(@PathVariable String userId) {
-        return userService.findById(userId);
+    */
+    @GetMapping("/{login}")
+    public Optional<User> getUSer(@PathVariable String login) {
+        return userService.findUserById(login);
     }
 
 }

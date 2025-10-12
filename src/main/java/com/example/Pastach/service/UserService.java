@@ -1,5 +1,6 @@
 package com.example.Pastach.service;
 
+import com.example.Pastach.dao.UserDao;
 import com.example.Pastach.model.User;
 import com.example.Pastach.storage.user.InMemoryUserStorage;
 import com.example.Pastach.validation.UserValidation;
@@ -9,13 +10,13 @@ import java.util.*;
 
 @Service
 public class UserService {
-    private final InMemoryUserStorage inMemoryUserStorage;
+    private final UserDao userDao;
 
-    public UserService(InMemoryUserStorage inMemoryUserStorage) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
+    public UserService(UserDao userDao) {
+        this.userDao = userDao;
     }
 
-    public Map<String, User> findAll() {
+    /*public Map<String, User> findAll() {
         return inMemoryUserStorage.findAll();
     }
 
@@ -49,10 +50,10 @@ public class UserService {
     public Optional<User> deleteById(String userId) {
         UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
         return inMemoryUserStorage.deleteById(userId);
-    }
+    }*/
 
-    public Optional<User> findById(String userId) {
-        UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
-        return inMemoryUserStorage.findById(userId);
+    public Optional<User> findUserById(String userId) {
+        //UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
+        return userDao.findUserById(userId);
     }
 }
