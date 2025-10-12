@@ -19,12 +19,12 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public Map<Integer, User> findAll() {
+    public Map<String, User> findAll() {
         return userService.findAll();
     }
 
     @PutMapping("/users/{userId}") // update info
-    public User update(@RequestBody User user, @PathVariable int userId) {
+    public User update(@RequestBody User user, @PathVariable String userId) {
         return userService.updateById(user, userId);
     }
 
@@ -34,12 +34,12 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{userId}")
-    public Optional<User> deleteById(@PathVariable int userId) {
+    public Optional<User> deleteById(@PathVariable String userId) {
         return userService.deleteById(userId);
     }
 
     @GetMapping("users/{userId}")
-    public Optional<User> findById(@PathVariable int userId) {
+    public Optional<User> findById(@PathVariable String userId) {
         return userService.findById(userId);
     }
 

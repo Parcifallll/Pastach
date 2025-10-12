@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface UserStorage {
-    Map<Integer, User> findAll();
-    User updateById(User user, int userId);
+    Map<String, User> findAll();
+    User updateById(User user, String userId);
     User create(User user);
-    Optional<User> findById(int userId);
-    Optional<User> deleteById(int userId);
+    Optional<User> findById(String userId);
+    Optional<User> deleteById(String userId);
 }

@@ -9,16 +9,15 @@ import java.util.Optional;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
-    private Map<Integer, User> users = new HashMap<>();
-    int nextId = 1;
+    private Map<String, User> users = new HashMap<>();
 
     @Override
-    public Map<Integer, User> findAll() {
+    public Map<String, User> findAll() {
         return users;
     }
 
     @Override
-    public User updateById(User user, int userId) {
+    public User updateById(User user, String userId) {
         user.setId(userId);
         users.put(userId, user);
         return user;
@@ -26,19 +25,17 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(User user) {
-        user.setId(nextId);
-        nextId++;
         users.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public Optional<User> findById(int userId) {
+    public Optional<User> findById(String userId) {
         return Optional.ofNullable(users.get(userId));
     }
 
     @Override
-    public Optional<User> deleteById(int userId) {
+    public Optional<User> deleteById(String userId) {
         User deletedUser = users.get(userId);
         users.remove(userId);
         return Optional.ofNullable(deletedUser);

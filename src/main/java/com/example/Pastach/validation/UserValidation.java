@@ -14,13 +14,22 @@ public class UserValidation {
         }
     }
 
-    public static void validateUserAlreadyExists(Map<Integer, User> users, User user) {
-        if (users.values().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()))) {
-            throw new UserAlreadyExistException("User with email " + user.getEmail() + " already exists");
+    public static void validateUserAlreadyExists(Map<String, User> users, User user, String field) {
+        if (field.equals("email")) {
+            boolean emailExists = users.values().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()));
+            if (emailExists) {
+                throw new UserAlreadyExistException("User with email " + user.getEmail() + " already exists");
+            }
+        } else if (field.equals("id")) {
+            boolean idExists = users.values().stream().anyMatch(u -> u.getId().equals(user.getId()));
+            if (idExists) {
+                throw new UserAlreadyExistException("User with id " + user.getId() + " already exists");
+            }
         }
     }
 
-    public static void validateUserExists(Map<Integer, User> users, int userId) {
+
+    public static void validateUserExists(Map<String, User> users, String userId) {
         if (!users.containsKey(userId)) {
             throw new UserNotFoundException("User with id " + userId + " is not found");
         }

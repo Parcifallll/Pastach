@@ -15,32 +15,43 @@ public class UserService {
         this.inMemoryUserStorage = inMemoryUserStorage;
     }
 
-    public Map<Integer, User> findAll() {
+    public Map<String, User> findAll() {
         return inMemoryUserStorage.findAll();
     }
 
-    public User updateById(User user, int userId) {
+    public User updateById(User user, String userId) {
         UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
-        if (!user.getEmail().equals(inMemoryUserStorage.findAll().get(userId).getEmail())) {
+        User existingUser = inMemoryUserStorage.findAll().get(userId);
+        boolean emailChanged = !user.getEmail().equals(existingUser.getEmail());
+        boolean idChanged = !user.getId().equals(existingUser.getId());
+
+        if (emailChanged) {
             UserValidation.validateEmail(user.getEmail());
-            UserValidation.validateUserAlreadyExists(inMemoryUserStorage.findAll(), user);
+            UserValidation.validateUserAlreadyExists(inMemoryUserStorage.findAll(), user, "email");
         }
-        return inMemoryUserStorage.updateById(user, userId); // in PUT and POST requests it is better to return the object/smth to confirm the success
+
+        if (idChanged) {
+            UserValidation.validateUserAlreadyExists(inMemoryUserStorage.findAll(), user, "id");
+        }
+
+        return inMemoryUserStorage.updateById(user, userId);
     }
+
 
     public User create(User user) {
+        UserValidation.validateUserAlreadyExists(inMemoryUserStorage.findAll(), user, "email");
         UserValidation.validateEmail(user.getEmail());
-        UserValidation.validateUserAlreadyExists(findAll(), user);
+        UserValidation.validateUserAlreadyExists(inMemoryUserStorage.findAll(), user, "id");
         return inMemoryUserStorage.create(user);
-
     }
 
-    public Optional<User> deleteById(int userId) {
+
+    public Optional<User> deleteById(String userId) {
         UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
         return inMemoryUserStorage.deleteById(userId);
     }
 
-    public Optional<User> findById(int userId) {
+    public Optional<User> findById(String userId) {
         UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
         return inMemoryUserStorage.findById(userId);
     }
