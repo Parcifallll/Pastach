@@ -21,7 +21,7 @@ public class PostController { //manage Posts
     }
 
     @GetMapping("/posts/{userId}") // http://localhost:8080/posts/12
-    public Collection<Post> findPostsByUser(@PathVariable String userId) {
+    public Collection<Post> getPosts(@PathVariable String userId) {
         return postService.findPostsByUser(userId);
     }
 
