@@ -8,14 +8,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+    private final Logger log = Logger.getLogger(UserController.class.getName());
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping("/{login}")
+    public User getUser(@PathVariable String login) {
+        log.info("getUser: " + login);
+        return userService.findUserById(login);
     }
 
     /*
@@ -39,9 +47,6 @@ public class UserController {
         return userService.deleteById(userId);
     }
     */
-    @GetMapping("/{login}")
-    public Optional<User> getUSer(@PathVariable String login) {
-        return userService.findUserById(login);
-    }
+
 
 }

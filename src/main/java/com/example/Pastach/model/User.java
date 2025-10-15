@@ -6,23 +6,24 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class User {
-    @NonNull
-    @NotBlank
-    @Email
-    private String email;
-    private String userName = "no_name";
     @Setter
     @NonNull
     @NotBlank
     private String id;
-
+    private String userName = "no_name";
+    @NonNull
+    @NotBlank
+    @Email
+    private String email;
     @JsonFormat(pattern = "dd.MM.yyyy") // we should add a dependency
     private LocalDate birthday;
 }

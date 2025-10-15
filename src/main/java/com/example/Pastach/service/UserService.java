@@ -1,19 +1,28 @@
 package com.example.Pastach.service;
 
 import com.example.Pastach.dao.UserDao;
+import com.example.Pastach.exception.UserNotFoundException;
 import com.example.Pastach.model.User;
 import com.example.Pastach.storage.user.InMemoryUserStorage;
 import com.example.Pastach.validation.UserValidation;
+import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 @Service
 public class UserService {
     private final UserDao userDao;
+    private final Logger log = Logger.getLogger(UserService.class.getName());
 
     public UserService(UserDao userDao) {
         this.userDao = userDao;
+    }
+
+    public User findUserById(String userId) {
+        log.info("(UserService): findUserById " + userId );
+        return userDao.findUserById(userId).orElseThrow(() -> new UserNotFoundException("User with id " + userId + " not found"));
     }
 
     /*public Map<String, User> findAll() {
@@ -51,9 +60,4 @@ public class UserService {
         UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
         return inMemoryUserStorage.deleteById(userId);
     }*/
-
-    public Optional<User> findUserById(String userId) {
-        //UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);
-        return userDao.findUserById(userId);
-    }
 }

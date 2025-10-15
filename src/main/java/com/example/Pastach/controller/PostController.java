@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,33 +20,33 @@ public class PostController { //manage Posts
         this.postService = postService;
     }
 
-    @GetMapping("posts/search") // http://localhost:8080/posts/search?author=Roman
-    public Map<Integer, Post> searchPosts(@RequestParam String author, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") LocalDate creationDate) {
-        return postService.searchPosts(author, creationDate);
+    @GetMapping("/posts/{userId}") // http://localhost:8080/posts/12
+    public Collection<Post> findPostsByUser(@PathVariable String userId) {
+        return postService.findPostsByUser(userId);
     }
 
-    @GetMapping("/posts/{postId}") // http://localhost:8080/posts/12
-    public Optional<Post> findById(@PathVariable int postId) {
-        return postService.findById(postId);
-    }
+//    @GetMapping("posts/search") // http://localhost:8080/posts/search?author=Roman
+//    public Map<Integer, Post> searchPosts(@RequestParam String author, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") LocalDate creationDate) {
+//        return postService.searchPosts(author, creationDate);
+//    }
 
-    @GetMapping("/posts") // endpoint
-    public Map<Integer, Post> findAll() {
-        return postService.findAll();
-    }
-
-    @PostMapping(value = "/post") // endpoint
-    public Post create(@RequestBody Post post) {
-        return postService.create(post);
-    }
-
-    @DeleteMapping("/posts/{postId}")
-    public Optional<Post> deleteById(@PathVariable int postId) {
-        return postService.deleteById(postId);
-    }
-
-    @PutMapping("/posts/{postId}")
-    public Post updateById(@RequestBody Post post, @PathVariable int postId) {
-        return postService.updateById(post, postId);
-    }
+//    @GetMapping("/posts") // endpoint
+//    public Map<Integer, Post> findAll() {
+//        return postService.findAll();
+//    }
+//
+//    @PostMapping(value = "/post") // endpoint
+//    public Post create(@RequestBody Post post) {
+//        return postService.create(post);
+//    }
+//
+//    @DeleteMapping("/posts/{postId}")
+//    public Optional<Post> deleteById(@PathVariable int postId) {
+//        return postService.deleteById(postId);
+//    }
+//
+//    @PutMapping("/posts/{postId}")
+//    public Post updateById(@RequestBody Post post, @PathVariable int postId) {
+//        return postService.updateById(post, postId);
+//    }
 }

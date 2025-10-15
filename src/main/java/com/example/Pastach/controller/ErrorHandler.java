@@ -1,11 +1,14 @@
 package com.example.Pastach.controller;
 
 import com.example.Pastach.exception.*;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.sql.SQLException;
 
 @RestControllerAdvice("com.example.Pastach.controller.")
 @ResponseBody
@@ -54,7 +57,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR) // 500
-    public ErrorResponse handleThrowable (final Throwable e) {
+    public ErrorResponse handleThrowable(final Throwable e) {
         return new ErrorResponse("Something went wrong...");
     }
 }
