@@ -14,4 +14,6 @@ public class PastachApplication {
 		SpringApplication.run(PastachApplication.class, args);
 	}
 
+
 }
+
