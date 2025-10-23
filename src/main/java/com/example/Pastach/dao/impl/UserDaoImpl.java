@@ -31,7 +31,9 @@ public class UserDaoImpl implements UserDao {
     @Override
     public Optional<User> findUserById(String id) {
         String sql = "SELECT * FROM users WHERE id = ?";
+        log.info("sql request sent");
         try {
+            log.info(jdbcTemplate.getDataSource().toString());
             User user = jdbcTemplate.queryForObject(sql, userRowMapper, id);
             return Optional.of(user);
         } catch (EmptyResultDataAccessException e) {

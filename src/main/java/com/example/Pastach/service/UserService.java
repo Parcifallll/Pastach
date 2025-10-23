@@ -6,6 +6,7 @@ import com.example.Pastach.model.User;
 import com.example.Pastach.storage.user.InMemoryUserStorage;
 import com.example.Pastach.validation.UserValidation;
 import jakarta.annotation.Nullable;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
