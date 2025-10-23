@@ -3,6 +3,7 @@ package com.example.Pastach.dao.impl;
 import com.example.Pastach.dao.UserDao;
 import com.example.Pastach.dao.mappers.UserRowMapper;
 import com.example.Pastach.exception.UserNotFoundException;
+import com.example.Pastach.model.Post;
 import com.example.Pastach.model.User;
 import com.example.Pastach.service.UserService;
 
@@ -15,6 +16,9 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -39,5 +43,12 @@ public class UserDaoImpl implements UserDao {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<User> findAll() {
+        String sql = "SELECT * FROM users";
+        List<User> users = jdbcTemplate.query(sql, userRowMapper);
+        return users;
     }
 }

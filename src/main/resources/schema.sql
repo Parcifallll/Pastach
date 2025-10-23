@@ -11,7 +11,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_id_unindex ON users (id);
 CREATE TABLE IF NOT EXISTS posts (
     id SERIAL PRIMARY KEY,
     author_id VARCHAR(64) NOT NULL,
-    post_text VARCHAR(1000),
+    text VARCHAR(1000),
     photo_url VARCHAR(1000),
     creation_date DATE DEFAULT CURRENT_DATE,
     CONSTRAINT fk_post_author

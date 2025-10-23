@@ -26,9 +26,11 @@ public class UserService {
         return userDao.findUserById(userId).orElseThrow(() -> new UserNotFoundException("User with id " + userId + " not found"));
     }
 
-    /*public Map<String, User> findAll() {
-        return inMemoryUserStorage.findAll();
+    public List<User> findAll() {
+        return userDao.findAll();
     }
+
+    /*
 
     public User updateById(User user, String userId) {
         UserValidation.validateUserExists(inMemoryUserStorage.findAll(), userId);

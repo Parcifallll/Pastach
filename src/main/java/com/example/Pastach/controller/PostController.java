@@ -25,28 +25,28 @@ public class PostController { //manage Posts
         return postService.findPostsByUser(userId);
     }
 
-//    @GetMapping("posts/search") // http://localhost:8080/posts/search?author=Roman
-//    public Map<Integer, Post> searchPosts(@RequestParam String author, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") LocalDate creationDate) {
-//        return postService.searchPosts(author, creationDate);
-//    }
+    @GetMapping("posts/search") // http://localhost:8080/posts/search?author=Roman
+    public Collection<Post> searchPosts(@RequestParam String author, @RequestParam @DateTimeFormat(pattern = "dd.MM.yyyy") LocalDate creationDate) {
+        return postService.searchPosts(author, creationDate);
+    }
 
-//    @GetMapping("/posts") // endpoint
-//    public Map<Integer, Post> findAll() {
-//        return postService.findAll();
-//    }
-//
-//    @PostMapping(value = "/post") // endpoint
-//    public Post create(@RequestBody Post post) {
-//        return postService.create(post);
-//    }
-//
-//    @DeleteMapping("/posts/{postId}")
-//    public Optional<Post> deleteById(@PathVariable int postId) {
-//        return postService.deleteById(postId);
-//    }
-//
-//    @PutMapping("/posts/{postId}")
-//    public Post updateById(@RequestBody Post post, @PathVariable int postId) {
-//        return postService.updateById(post, postId);
-//    }
+    @GetMapping("/posts") // endpoint
+    public Collection<Post> findAll() {
+        return postService.findAll();
+    }
+
+    @PostMapping(value = "/post") // endpoint
+    public Post create(@RequestBody Post post) {
+        return postService.create(post);
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    public Optional<Post> deleteById(@PathVariable int postId) {
+        return postService.deleteById(postId);
+    }
+
+    @PutMapping("/posts/{postId}")
+    public Post updateById(@RequestBody Post post, @PathVariable int postId) {
+        return postService.updateById(post, postId);
+    }
 }

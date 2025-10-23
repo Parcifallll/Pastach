@@ -5,6 +5,7 @@ import com.example.Pastach.exception.UserAlreadyExistException;
 import com.example.Pastach.exception.UserNotFoundException;
 import com.example.Pastach.model.User;
 
+import java.util.List;
 import java.util.Map;
 
 public class UserValidation {
@@ -29,8 +30,8 @@ public class UserValidation {
     }
 
 
-    public static void validateUserExists(Map<String, User> users, String userId) {
-        if (!users.containsKey(userId)) {
+    public static void validateUserExists(List<User> users, String userId) {
+        if (!users.contains(userId)) {
             throw new UserNotFoundException("User with id " + userId + " is not found");
         }
     }
