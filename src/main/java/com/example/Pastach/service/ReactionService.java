@@ -2,6 +2,7 @@ package com.example.Pastach.service;
 
 import com.example.Pastach.exception.CommentNotFoundException;
 import com.example.Pastach.exception.PostNotFoundException;
+import com.example.Pastach.kafka.KafkaProducerService;
 import com.example.Pastach.model.*;
 import com.example.Pastach.repository.CommentRepository;
 import com.example.Pastach.repository.PostRepository;
@@ -20,10 +21,10 @@ public class ReactionService {
     private final ReactionRepository reactionRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final KafkaProducerService kafkaProducer;
 
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    // one reaction at one target - toggle
     public void toggleReaction(ReactionTargetType targetType,
                                Long targetId,
                                ReactionType type,
@@ -31,6 +32,7 @@ public class ReactionService {
 
         String authorId = user.getId();
 
+        // Validate target exists
         if (targetType == ReactionTargetType.POST) {
             postRepository.findById(targetId)
                     .orElseThrow(() -> new PostNotFoundException(targetId));
@@ -42,21 +44,34 @@ public class ReactionService {
         Optional<Reaction> existing = reactionRepository
                 .findByTargetTypeAndTargetIdAndAuthorId(targetType, targetId, authorId);
 
+        Reaction savedReaction = null;
+        boolean isNewReaction = false;
+
         if (existing.isPresent()) {
             Reaction r = existing.get();
 
             if (r.getType() == type) {
+                // Same type - remove reaction
                 reactionRepository.delete(r);
             } else {
+                // Different type - update reaction
                 r.setType(type);
-                reactionRepository.save(r);
+                savedReaction = reactionRepository.save(r);
             }
         } else {
+            // New reaction
             Reaction reaction = new Reaction(targetType, targetId, authorId, type);
-            reactionRepository.save(reaction);
+            savedReaction = reactionRepository.save(reaction);
+            isNewReaction = true;
         }
 
+        // Update counters
         updateCounters(targetType, targetId);
+
+        // Send event to Kafka (only for new reactions on POSTS)
+        if (isNewReaction && savedReaction != null && targetType == ReactionTargetType.POST) {
+            kafkaProducer.sendReactionCreated(savedReaction);  // ← ADD this!
+        }
     }
 
     private void updateCounters(ReactionTargetType targetType, Long targetId) {

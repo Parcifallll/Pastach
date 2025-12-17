@@ -1,4 +1,4 @@
-package com.example.Pastach.service;
+package com.example.Pastach.security;
 
 import com.example.Pastach.model.User;
 import io.jsonwebtoken.Claims;

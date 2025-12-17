@@ -1,6 +1,6 @@
 package com.example.Pastach.controller;
 
-import com.example.Pastach.SecurityConfig;
+import com.example.Pastach.security.SecurityConfig;
 import com.example.Pastach.dto.comment.CommentCreateDTO;
 import com.example.Pastach.dto.comment.CommentResponseDTO;
 import com.example.Pastach.dto.comment.CommentUpdateDTO;
@@ -10,15 +10,13 @@ import com.example.Pastach.model.Role;
 import com.example.Pastach.model.RoleEnum;
 import com.example.Pastach.model.User;
 import com.example.Pastach.service.CommentService;
-import com.example.Pastach.service.JwtService;
+import com.example.Pastach.security.JwtService;
 import com.example.Pastach.service.ReactionService;
-import com.example.Pastach.service.UserDetailsServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.*;

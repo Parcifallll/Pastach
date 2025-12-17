@@ -1,6 +1,5 @@
-package com.example.Pastach;
+package com.example.Pastach.security;
 
-import com.example.Pastach.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

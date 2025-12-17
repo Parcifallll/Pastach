@@ -4,7 +4,7 @@ import com.example.Pastach.dto.auth.JwtResponse;
 import com.example.Pastach.dto.auth.LoginDTO;
 import com.example.Pastach.dto.auth.RefreshTokenRequest;
 import com.example.Pastach.dto.auth.SignupDTO;
-import com.example.Pastach.service.AuthService;
+import com.example.Pastach.security.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

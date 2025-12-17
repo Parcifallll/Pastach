@@ -1,4 +1,4 @@
-package com.example.Pastach.service;
+package com.example.Pastach.security;
 
 import com.example.Pastach.dto.auth.JwtResponse;
 import com.example.Pastach.dto.auth.LoginDTO;
@@ -6,6 +6,7 @@ import com.example.Pastach.dto.auth.SignupDTO;
 import com.example.Pastach.exception.UserAlreadyExistException;
 import com.example.Pastach.model.User;
 import com.example.Pastach.repository.UserRepository;
+import com.example.Pastach.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
