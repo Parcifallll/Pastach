@@ -1,4 +1,4 @@
-package com.example.Pastach.kafka;
+package com.example.Pastach.kafka.event.post;
 
 import com.example.Pastach.model.Post;
 import lombok.AllArgsConstructor;

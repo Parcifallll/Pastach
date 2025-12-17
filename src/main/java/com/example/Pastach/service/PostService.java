@@ -6,6 +6,7 @@ import com.example.Pastach.dto.post.PostResponseDTO;
 import com.example.Pastach.dto.post.PostUpdateDTO;
 import com.example.Pastach.exception.PostNotFoundException;
 import com.example.Pastach.exception.UserNotFoundException;
+import com.example.Pastach.kafka.KafkaProducerService;
 import com.example.Pastach.model.Post;
 import com.example.Pastach.model.RoleEnum;
 import com.example.Pastach.model.User;
@@ -21,28 +22,36 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor // generate constructor for final-fields
+@RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostMapper postMapper;
+    private final KafkaProducerService kafkaProducer;
 
 
     @PreAuthorize("isAuthenticated()")
     @Transactional
     public PostResponseDTO create(PostCreateDTO dto, String authorId) {
         if (!dto.hasContent()) throw new IllegalArgumentException("Post can't be empty");
+
+        // Save post to database
         Post post = postMapper.toEntity(dto);
         post.setAuthorId(authorId);
-        post = postRepository.save(post); // create Post from dto
+        post = postRepository.save(post);
+
+        // Send event to Kafka (async)
+        kafkaProducer.sendPostCreated(post);
+
+        // Return response
         return postMapper.toResponseDto(post);
     }
 
     @Transactional(readOnly = true)
     public PostResponseDTO getById(Long postId) {
         return postRepository.findById(postId)
-                .map(postMapper::toResponseDto) // map: Post -> PostResponseDto
+                .map(postMapper::toResponseDto)
                 .orElseThrow(() -> new PostNotFoundException(postId));
     }
 
@@ -52,7 +61,6 @@ public class PostService {
         return page.map(postMapper::toResponseDto);
     }
 
-    // with pagination
     @Transactional(readOnly = true)
     public Page<PostResponseDTO> getByAuthorId(String authorId, Pageable pageable) {
         if (!userRepository.existsById(authorId)) {
@@ -64,7 +72,7 @@ public class PostService {
     }
 
 
-    @PreAuthorize("isAuthenticated()") // @PreAuthorize("authenticated()") + @AuthenticationPrincipal ... !
+    @PreAuthorize("isAuthenticated()")
     @Transactional
     public PostResponseDTO updateById(Long postId, PostUpdateDTO dto, @AuthenticationPrincipal User curUser) {
         Post post = postRepository.findById(postId)
@@ -75,8 +83,19 @@ public class PostService {
             throw new AccessDeniedException("You are not authorized to edit this post.");
         }
 
+        // Check if text changed (for embedding recalculation)
+        String oldText = post.getText();
+
         postMapper.updateFromDto(dto, post);
-        post = postRepository.save(post);  // update existing post with new data from dto
+        post = postRepository.save(post);
+
+        // Send event to Kafka if text changed
+        String newText = post.getText();
+        if ((oldText == null && newText != null) ||
+                (oldText != null && !oldText.equals(newText))) {
+            kafkaProducer.sendPostUpdated(post);
+        }
+
         return postMapper.toResponseDto(post);
     }
 
@@ -91,7 +110,12 @@ public class PostService {
         if (!isAuthor && !isAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this post.");
         }
+
+        // Delete from database
         postRepository.delete(post);
+
+        // Send event to Kafka
+        kafkaProducer.sendPostDeleted(postId);
     }
 
 }

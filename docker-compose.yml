@@ -56,6 +56,7 @@ services:
 
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
+
   zookeeper:
     container_name: pastach-zookeeper
     image: confluentinc/cp-zookeeper:7.5.0

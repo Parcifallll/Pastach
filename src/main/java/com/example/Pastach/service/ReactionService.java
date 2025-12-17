@@ -69,8 +69,8 @@ public class ReactionService {
         updateCounters(targetType, targetId);
 
         // Send event to Kafka (only for new reactions on POSTS)
-        if (isNewReaction && savedReaction != null && targetType == ReactionTargetType.POST) {
-            kafkaProducer.sendReactionCreated(savedReaction);  // ← ADD this!
+        if (isNewReaction && targetType == ReactionTargetType.POST) {
+            kafkaProducer.sendReactionCreated(savedReaction);
         }
     }
 
