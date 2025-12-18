@@ -32,7 +32,7 @@ public class ReactionService {
 
         String authorId = user.getId();
 
-        // Validate target exists
+        // validate target exists
         if (targetType == ReactionTargetType.POST) {
             postRepository.findById(targetId)
                     .orElseThrow(() -> new PostNotFoundException(targetId));

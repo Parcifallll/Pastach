@@ -26,7 +26,7 @@ public class PostCreatedEvent {
         private String authorId;
         private String text;
         private String photoUrl;
-        private String createdAt;
+        private Instant createdAt;
     }
 
     public static PostCreatedEvent from(Post post) {
@@ -35,7 +35,7 @@ public class PostCreatedEvent {
                 post.getAuthorId(),
                 post.getText(),
                 post.getPhotoUrl(),
-                post.getCreatedAt().toString()
+                post.getCreatedAt()
         );
 
         return new PostCreatedEvent(

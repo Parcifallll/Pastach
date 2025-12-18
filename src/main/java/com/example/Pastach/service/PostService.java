@@ -43,11 +43,7 @@ public class PostService {
         post.setAuthorId(authorId);
         post = postRepository.save(post);
 
-        // Send event to Kafka (async)
-        log.info("About to send post.created event for post {} via kafkaProducer (is null: {})",
-            post.getId(), kafkaProducer == null);
         kafkaProducer.sendPostCreated(post);
-        log.info("Called kafkaProducer.sendPostCreated for post {}", post.getId());
 
         // Return response
         return postMapper.toResponseDto(post);
