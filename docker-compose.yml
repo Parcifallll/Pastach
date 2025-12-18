@@ -1,23 +1,6 @@
 version: '3.8'
 
 services:
-  db:
-    container_name: pastach-postgres
-    image: postgres:16
-    environment:
-      POSTGRES_DB: PastachDB
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   app:
     container_name: pastach-app
     build: .
@@ -56,6 +39,24 @@ services:
 
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
+  db:
+    container_name: pastach-postgres
+    image: postgres:16
+    environment:
+      POSTGRES_DB: PastachDB
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
 
   zookeeper:
     container_name: pastach-zookeeper
@@ -87,9 +88,9 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
 
       # Listeners
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
 
       # Replication (1 broker)
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
