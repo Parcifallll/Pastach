@@ -13,6 +13,7 @@ import com.example.Pastach.model.User;
 import com.example.Pastach.repository.PostRepository;
 import com.example.Pastach.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -42,7 +44,10 @@ public class PostService {
         post = postRepository.save(post);
 
         // Send event to Kafka (async)
+        log.info("About to send post.created event for post {} via kafkaProducer (is null: {})",
+            post.getId(), kafkaProducer == null);
         kafkaProducer.sendPostCreated(post);
+        log.info("Called kafkaProducer.sendPostCreated for post {}", post.getId());
 
         // Return response
         return postMapper.toResponseDto(post);
