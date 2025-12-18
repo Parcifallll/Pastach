@@ -53,10 +53,12 @@ public class ReactionService {
             if (r.getType() == type) {
                 // Same type - remove reaction
                 reactionRepository.delete(r);
+                if (targetType == ReactionTargetType.POST) kafkaProducer.sendReactionDeleted(r.getId(), authorId);
             } else {
-                // Different type - update reaction
+                // another type - update reaction
                 r.setType(type);
                 savedReaction = reactionRepository.save(r);
+                if (targetType == ReactionTargetType.POST) kafkaProducer.sendReactionUpdated(savedReaction);
             }
         } else {
             // New reaction
@@ -65,10 +67,9 @@ public class ReactionService {
             isNewReaction = true;
         }
 
-        // Update counters
         updateCounters(targetType, targetId);
 
-        // Send event to Kafka (only for new reactions on POSTS)
+        // new reaction
         if (isNewReaction && targetType == ReactionTargetType.POST) {
             kafkaProducer.sendReactionCreated(savedReaction);
         }
