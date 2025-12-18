@@ -12,12 +12,12 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostCreatedEvent {
-    
+
     private String eventType = "post.created";
     private String eventId;
-    private Instant timestamp;
+    private String timestamp;
     private PostPayload payload;
-    
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -26,24 +26,23 @@ public class PostCreatedEvent {
         private String authorId;
         private String text;
         private String photoUrl;
-        private Instant createdAt;
+        private String createdAt;
     }
-    
-    // create event from Post
+
     public static PostCreatedEvent from(Post post) {
         PostPayload payload = new PostPayload(
-            post.getId(),
-            post.getAuthorId(),
-            post.getText(),
-            post.getPhotoUrl(),
-            post.getCreatedAt()
+                post.getId(),
+                post.getAuthorId(),
+                post.getText(),
+                post.getPhotoUrl(),
+                post.getCreatedAt().toString()
         );
-        
+
         return new PostCreatedEvent(
-            "post.created",
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            payload
+                "post.created",
+                UUID.randomUUID().toString(),
+                Instant.now().toString(),
+                payload
         );
     }
 }
