@@ -62,7 +62,7 @@ services:
     container_name: pastach-zookeeper
     image: confluentinc/cp-zookeeper:7.5.0
     environment:
-      ZOO_LOG4J_PROP: WARN, CONSOLE
+      # ZOO_LOG4J_PROP: WARN, CONSOLE
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:

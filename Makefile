@@ -24,7 +24,7 @@ help:
 
 # DEVELOPMENT
 dev: fast run ## build JAR (without clean) + run app and infr (if it's not running)
-all: build run ## clean development (full rebuild)
+dev-all: build run ## clean development (full rebuild)
 
 # INFRASTRUCTURE
 infra: infra-up
@@ -94,18 +94,12 @@ kafka-console-consumer: ## run console consumer-kafka (make kafka-console-consum
 test: ## run all tests
 	@$(MAVEN) test
 
-test-unit: ## run unit tests
-	@$(MAVEN) test -Dtest="*Test"
-
-test-integration: ## run integration tests
-	@$(MAVEN) test -Dtest="*IT"
-
 test-build: ## build with all tests
 	@$(MAVEN) clean verify
 
 # MONITORING & STATUS
 status: ## all services-statuses
-	@$(DOCKER_COMPOSE) ps
+	@docker ps
 
 ps: status ## alias for status
 
@@ -131,7 +125,3 @@ docker-images: ## show docker images
 
 docker-prune: ## clean un-used resources
 	@docker system prune --force
-
-# DEPLOYMENT
-deploy: test-build ## deploy (build with tests and run in PROD)
-	@$(DOCKER_COMPOSE) --file docker-compose.prod.yml up --detach --build
