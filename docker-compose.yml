@@ -70,6 +70,7 @@ services:
     volumes:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_logs:/var/lib/zookeeper/log
+      - zookeeper_secrets:/etc/zookeeper/secrets
     healthcheck:
       test: [ "CMD", "nc", "-z", "localhost", "2181" ]
       interval: 10s
@@ -105,6 +106,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     volumes:
       - kafka_data:/var/lib/kafka/data
+      - kafka_secrets:/etc/kafka/secrets
     healthcheck:
       test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092" ]
       interval: 10s
@@ -116,3 +118,5 @@ volumes:
   kafka_data:
   zookeeper_data:
   zookeeper_logs:
+  kafka_secrets:
+  zookeeper_secrets:
