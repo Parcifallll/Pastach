@@ -23,6 +23,8 @@ help:
 	@echo ""
 
 # DEVELOPMENT
+debug:
+	@$(MAVEN) spring-boot:run
 dev: fast run ## build JAR (without clean) + run app and infr (if it's not running)
 dev-all: build run ## clean development (full rebuild)
 
