@@ -1,12 +1,14 @@
 package com.example.Pastach.kafka;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -39,5 +41,25 @@ public class KafkaConfig {
     public KafkaTemplate<String, Object> kafkaTemplate() {
         log.info("Creating KafkaTemplate bean");
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    // topic: pastach.posts (3 partitions)
+    @Bean
+    public NewTopic postsTopic() {
+        log.info("Creating topic: pastach.posts (3 partitions)");
+        return TopicBuilder.name("pastach.posts")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    // topic: pastach.reactions (3 partitions)
+    @Bean
+    public NewTopic reactionsTopic() {
+        log.info("Creating topic: pastach.reactions (3 partitions)");
+        return TopicBuilder.name("pastach.reactions")
+                .partitions(3)
+                .replicas(1)
+                .build();
     }
 }

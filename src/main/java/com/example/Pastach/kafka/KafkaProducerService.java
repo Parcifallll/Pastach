@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class KafkaProducerService {
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public KafkaProducerService(KafkaTemplate<String, Object> kafkaTemplate) {
@@ -23,23 +22,24 @@ public class KafkaProducerService {
         log.info("KafkaProducerService initialized with KafkaTemplate: {}", kafkaTemplate != null ? "SUCCESS" : "NULL");
     }
 
-    // post events
-
     public void sendPostCreated(Post post) {
         try {
             PostCreatedEvent event = PostCreatedEvent.from(post);
-            kafkaTemplate.send("post.created", post.getId().toString(), event)
-                .whenComplete((result, ex) -> {
-                    if (ex == null) {
-                        log.info("Successfully sent post.created event for post {} to topic {} partition {}",
-                            post.getId(),
-                            result.getRecordMetadata().topic(),
-                            result.getRecordMetadata().partition());
-                    } else {
-                        log.error("Failed to send post.created event for post {}: {}",
-                            post.getId(), ex.getMessage(), ex);
-                    }
-                });
+            // key: postId for order
+            String key = post.getId().toString();
+
+            kafkaTemplate.send("pastach.posts", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent post.created event for post {} to topic {} partition {}",
+                                    post.getId(),
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send post.created event for post {}: {}",
+                                    post.getId(), ex.getMessage(), ex);
+                        }
+                    });
         } catch (Exception e) {
             log.error("Failed to create post.created event: {}", e.getMessage(), e);
         }
@@ -48,18 +48,20 @@ public class KafkaProducerService {
     public void sendPostUpdated(Post post) {
         try {
             PostUpdatedEvent event = PostUpdatedEvent.from(post);
-            kafkaTemplate.send("post.updated", post.getId().toString(), event)
-                .whenComplete((result, ex) -> {
-                    if (ex == null) {
-                        log.info("Successfully sent post.updated event for post {} to topic {} partition {}",
-                            post.getId(),
-                            result.getRecordMetadata().topic(),
-                            result.getRecordMetadata().partition());
-                    } else {
-                        log.error("Failed to send post.updated event for post {}: {}",
-                            post.getId(), ex.getMessage(), ex);
-                    }
-                });
+            String key = post.getId().toString();
+
+            kafkaTemplate.send("pastach.posts", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent post.updated event for post {} to topic {} partition {}",
+                                    post.getId(),
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send post.updated event for post {}: {}",
+                                    post.getId(), ex.getMessage(), ex);
+                        }
+                    });
         } catch (Exception e) {
             log.error("Failed to create post.updated event: {}", e.getMessage(), e);
         }
@@ -68,39 +70,46 @@ public class KafkaProducerService {
     public void sendPostDeleted(Long postId) {
         try {
             PostDeletedEvent event = PostDeletedEvent.from(postId);
-            kafkaTemplate.send("post.deleted", postId.toString(), event)
-                .whenComplete((result, ex) -> {
-                    if (ex == null) {
-                        log.info("Successfully sent post.deleted event for post {} to topic {} partition {}",
-                            postId,
-                            result.getRecordMetadata().topic(),
-                            result.getRecordMetadata().partition());
-                    } else {
-                        log.error("Failed to send post.deleted event for post {}: {}",
-                            postId, ex.getMessage(), ex);
-                    }
-                });
+            String key = postId.toString();
+
+            kafkaTemplate.send("pastach.posts", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent post.deleted event for post {} to topic {} partition {}",
+                                    postId,
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send post.deleted event for post {}: {}",
+                                    postId, ex.getMessage(), ex);
+                        }
+                    });
         } catch (Exception e) {
             log.error("Failed to create post.deleted event: {}", e.getMessage(), e);
         }
     }
 
     // reaction events
+
     public void sendReactionCreated(Reaction reaction) {
         try {
             ReactionCreatedEvent event = ReactionCreatedEvent.from(reaction);
-            kafkaTemplate.send("reaction.created", reaction.getId().toString(), event)
-                .whenComplete((result, ex) -> {
-                    if (ex == null) {
-                        log.info("Successfully sent reaction.created event for reaction {} to topic {} partition {}",
-                            reaction.getId(),
-                            result.getRecordMetadata().topic(),
-                            result.getRecordMetadata().partition());
-                    } else {
-                        log.error("Failed to send reaction.created event for reaction {}: {}",
-                            reaction.getId(), ex.getMessage(), ex);
-                    }
-                });
+            //key: authorId for user-based partitions and ordering
+            String key = reaction.getAuthorId();
+
+            kafkaTemplate.send("pastach.reactions", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent reaction.created event for reaction {} (author {}) to topic {} partition {}",
+                                    reaction.getId(),
+                                    reaction.getAuthorId(),
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send reaction.created event for reaction {}: {}",
+                                    reaction.getId(), ex.getMessage(), ex);
+                        }
+                    });
         } catch (Exception e) {
             log.error("Failed to create reaction.created event: {}", e.getMessage(), e);
         }
@@ -109,18 +118,21 @@ public class KafkaProducerService {
     public void sendReactionUpdated(Reaction reaction) {
         try {
             ReactionUpdatedEvent event = ReactionUpdatedEvent.from(reaction);
-            kafkaTemplate.send("reaction.updated", reaction.getId().toString(), event)
-                .whenComplete((result, ex) -> {
-                    if (ex == null) {
-                        log.info("Successfully sent reaction.updated event for reaction {} to topic {} partition {}",
-                            reaction.getId(),
-                            result.getRecordMetadata().topic(),
-                            result.getRecordMetadata().partition());
-                    } else {
-                        log.error("Failed to send reaction.updated event for reaction {}: {}",
-                            reaction.getId(), ex.getMessage(), ex);
-                    }
-                });
+            String key = reaction.getAuthorId();
+
+            kafkaTemplate.send("pastach.reactions", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent reaction.updated event for reaction {} (author {}) to topic {} partition {}",
+                                    reaction.getId(),
+                                    reaction.getAuthorId(),
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send reaction.updated event for reaction {}: {}",
+                                    reaction.getId(), ex.getMessage(), ex);
+                        }
+                    });
         } catch (Exception e) {
             log.error("Failed to create reaction.updated event: {}", e.getMessage(), e);
         }
@@ -129,18 +141,21 @@ public class KafkaProducerService {
     public void sendReactionDeleted(Long reactionId, String authorId) {
         try {
             ReactionDeletedEvent event = ReactionDeletedEvent.from(reactionId, authorId);
-            kafkaTemplate.send("reaction.deleted", reactionId.toString(), event)
-                .whenComplete((result, ex) -> {
-                    if (ex == null) {
-                        log.info("Successfully sent reaction.deleted event for reaction {} to topic {} partition {}",
-                            reactionId,
-                            result.getRecordMetadata().topic(),
-                            result.getRecordMetadata().partition());
-                    } else {
-                        log.error("Failed to send reaction.deleted event for reaction {}: {}",
-                            reactionId, ex.getMessage(), ex);
-                    }
-                });
+            String key = authorId;
+
+            kafkaTemplate.send("pastach.reactions", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent reaction.deleted event for reaction {} (author {}) to topic {} partition {}",
+                                    reactionId,
+                                    authorId,
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send reaction.deleted event for reaction {}: {}",
+                                    reactionId, ex.getMessage(), ex);
+                        }
+                    });
         } catch (Exception e) {
             log.error("Failed to create reaction.deleted event: {}", e.getMessage(), e);
         }
