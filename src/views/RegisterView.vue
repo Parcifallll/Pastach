@@ -14,7 +14,6 @@
             pattern="[a-zA-Z0-9_-]+"
             title="Only letters, numbers, underscores and hyphens"
         />
-        <small>Unique identifier (letters, numbers, _ and - only)</small>
       </div>
 
       <div class="form-group">
@@ -58,6 +57,7 @@
             id="birthday"
             v-model="formData.birthday"
             type="date"
+            required
         />
       </div>
 
@@ -160,7 +160,7 @@ const handleRegister = async () => {
       email: formData.value.email,
       firstName: formData.value.firstName,
       lastName: formData.value.lastName,
-      birthday: formData.value.birthday || undefined,
+      birthday: formData.value.birthday,
       password: formData.value.password,
     });
   } catch (err) {

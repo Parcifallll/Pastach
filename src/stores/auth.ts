@@ -35,7 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
             // Fetch current user data
             await fetchCurrentUser();
 
-            router.push({ name: 'Home' });
+            router.push({ name: 'Feed' });
         } catch (err: any) {
             error.value = err.response?.data?.message || 'Login failed';
             throw err;
@@ -67,7 +67,7 @@ export const useAuthStore = defineStore('auth', () => {
             // Fetch current user data
             await fetchCurrentUser();
 
-            router.push({ name: 'Home' });
+            router.push({ name: 'Feed' });
         } catch (err: any) {
             error.value = err.response?.data?.message || 'Signup failed';
             throw err;
