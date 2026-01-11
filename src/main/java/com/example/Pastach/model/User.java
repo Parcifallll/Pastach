@@ -70,10 +70,10 @@ public class User implements UserDetails { // no constructors -> MapStruct creat
         return true;
     }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return !locked;
-    }
+//    @Override
+//    public boolean isAccountNonLocked() {
+//        return !locked;
+//    }
 
     @Override
     public boolean isCredentialsNonExpired() {

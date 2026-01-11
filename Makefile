@@ -12,8 +12,8 @@ BLUE := \033[0;34m
 NC := \033[0m # No Color
 
 # Phony targets
-.PHONY: help dev infra infra-up infra-down build run logs clean clean-all \
-        test restart status ps db-connect kafka-topics
+.PHONY: help dev infra infra-up infra-down build run logs \
+        test restart db-connect kafka-topics
 
 help:
 	@echo "$(GREEN)Available commands:$(NC)"
@@ -67,17 +67,6 @@ app-restart: app-stop run ## restart the app
 db-connect: ## connect to PostgreSQL
 	@$(DOCKER_COMPOSE) exec db psql --username $$(grep DB_USERNAME .env | cut --delimiter='=' --fields=2) --dbname PastachDB
 
-db-backup: ## create db-backup
-	@mkdir --parents backups
-	@$(DOCKER_COMPOSE) exec --interactive=false db pg_dump --username $$(grep DB_USERNAME .env | cut --delimiter='=' --fields=2) PastachDB > backups/backup_$$(date +%Y%m%d_%H%M%S).sql
-
-db-restore: ## restore db from backup (make db-restore FILE=backup.sql)
-	@if [ -z "$(FILE)" ]; then \
-		echo "$(RED)Enter filename: make db-restore FILE=backup.sql$(NC)"; \
-		exit 1; \
-	fi
-	@$(DOCKER_COMPOSE) exec --interactive=false db psql --username $$(grep DB_USERNAME .env | cut --delimiter='=' --fields=2) --dbname PastachDB < $(FILE)
-
 # KAFKA
 kafka-topics: ## show kafka topics
 	@$(DOCKER_COMPOSE) exec kafka kafka-topics --list --bootstrap-server localhost:9092
@@ -100,11 +89,6 @@ test-build: ## build with all tests
 	@$(MAVEN) clean verify
 
 # MONITORING & STATUS
-status: ## all services-statuses
-	@docker ps
-
-ps: status ## alias for status
-
 logs: ## all-services logs
 	@$(DOCKER_COMPOSE) logs --follow
 
@@ -112,18 +96,6 @@ logs-app: app-logs ## alias for app-logs
 
 logs-infra: infra-logs ## alias for infra-logs
 
-# CLEANUP
-clean: ## stop all containers
-	@$(DOCKER_COMPOSE) down
-
-clean-all: ## full clean-up (images, containers, volumes)
-	@$(DOCKER_COMPOSE) down --volumes --remove-orphans
-	@docker image prune --force
-	@$(MAVEN) clean
-
 # DOCKER
-docker-images: ## show docker images
-	@docker images
-
 docker-prune: ## clean un-used resources
 	@docker system prune --force

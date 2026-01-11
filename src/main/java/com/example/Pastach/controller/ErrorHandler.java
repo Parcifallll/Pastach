@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
 
-@RestControllerAdvice("com.example.Pastach.controller")
+@RestControllerAdvice(basePackages = "com.example.Pastach")
 public class ErrorHandler {
     public record ErrorResponse(String type, String message) {
     }
@@ -64,6 +64,12 @@ public class ErrorHandler {
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleAccessDenied(AccessDeniedException e) {
+        return new ErrorResponse("Forbidden", e.getMessage());
+    }
+
+    @ExceptionHandler(UserLockedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleUserLocked(UserLockedException e) {
         return new ErrorResponse("Forbidden", e.getMessage());
     }
 

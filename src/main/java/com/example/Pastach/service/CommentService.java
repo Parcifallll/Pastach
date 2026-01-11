@@ -12,6 +12,7 @@ import com.example.Pastach.model.RoleEnum;
 import com.example.Pastach.model.User;
 import com.example.Pastach.repository.CommentRepository;
 import com.example.Pastach.repository.PostRepository;
+import com.example.Pastach.security.RequireNonLockedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ public class CommentService {
 
 
     @PreAuthorize("isAuthenticated()")
+    @RequireNonLockedUser
     @Transactional
     public CommentResponseDTO create(Long postId, CommentCreateDTO dto, @AuthenticationPrincipal User user) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
@@ -55,6 +57,7 @@ public class CommentService {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @RequireNonLockedUser
     @Transactional
     public CommentResponseDTO updateById(Long commentId, CommentUpdateDTO dto, @AuthenticationPrincipal User user) {
         Comment comment = commentRepository.findById(commentId)
@@ -72,6 +75,7 @@ public class CommentService {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @RequireNonLockedUser
     @Transactional
     public void deleteById(Long commentId, @AuthenticationPrincipal User user) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException(commentId));

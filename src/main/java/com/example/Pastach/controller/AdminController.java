@@ -24,14 +24,14 @@ public class AdminController {
         return ResponseEntity.ok(userService.updateRoles(id, roles));
     }
 
-    @PatchMapping("/{id}/lock") //?lock=true
+    @PatchMapping("/{id}/lock") //?locked=true
     public ResponseEntity<UserResponseDTO> toggleUserLock(
             @PathVariable String id,
             @RequestParam boolean locked) {
         return ResponseEntity.ok(userService.toggleLock(id, locked));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/delete")
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();

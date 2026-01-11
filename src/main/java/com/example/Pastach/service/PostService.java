@@ -12,6 +12,7 @@ import com.example.Pastach.model.RoleEnum;
 import com.example.Pastach.model.User;
 import com.example.Pastach.repository.PostRepository;
 import com.example.Pastach.repository.UserRepository;
+import com.example.Pastach.security.RequireNonLockedUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,7 @@ public class PostService {
 
 
     @PreAuthorize("isAuthenticated()")
+    @RequireNonLockedUser
     @Transactional
     public PostResponseDTO create(PostCreateDTO dto, String authorId) {
         if (!dto.hasContent()) throw new IllegalArgumentException("Post can't be empty");
@@ -74,6 +76,7 @@ public class PostService {
 
 
     @PreAuthorize("isAuthenticated()")
+    @RequireNonLockedUser
     @Transactional
     public PostResponseDTO updateById(Long postId, PostUpdateDTO dto, @AuthenticationPrincipal User curUser) {
         Post post = postRepository.findById(postId)
@@ -101,6 +104,7 @@ public class PostService {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @RequireNonLockedUser
     @Transactional
     public void deleteById(Long postId, @AuthenticationPrincipal User currentUser) {
         Post post = postRepository.findById(postId)
