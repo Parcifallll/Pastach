@@ -26,15 +26,16 @@ public class AuthService {
 
     @Transactional
     public JwtResponse signup(SignupDTO dto) {
-        if (userRepository.existsById(dto.id())) {
-            throw new UserAlreadyExistException("User with id '" + dto.id() + "' already exists");
+        if (userRepository.existsByUsername(dto.username())) {
+            throw new UserAlreadyExistException("User with username '" + dto.username() + "' already exists");
         }
+
         if (userRepository.existsByEmail(dto.email())) {
             throw new UserAlreadyExistException("User with email '" + dto.email() + "' already exists");
         }
 
         User user = userService.createWithPassword(
-                dto.id(),
+                dto.username(),
                 dto.email(),
                 dto.firstName(),
                 dto.lastName(),
@@ -63,10 +64,9 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public JwtResponse refreshToken(String refreshToken) {
-        String email = jwtService.extractEmail(refreshToken);
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        Long userId = jwtService.extractUserId(refreshToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
 
         if (!jwtService.isTokenValid(refreshToken, user)) {
             throw new IllegalArgumentException("Invalid or expired refresh token");

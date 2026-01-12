@@ -9,8 +9,8 @@ import java.time.LocalDate;
 
 @Builder
 public record SignupDTO(
-        @NotBlank(message = "ID is required")
-        String id,
+        @NotBlank(message = "Username is required")
+        String username,
 
         @NotBlank(message = "Email is required")
         @Email(message = "Invalid email format")
