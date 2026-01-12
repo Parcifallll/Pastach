@@ -10,7 +10,8 @@ import java.util.Set;
 
 @Builder
 public record UserResponseDTO(
-        String id,
+        Long id,
+        String username,
         String firstName,
         String lastName,
         String email,

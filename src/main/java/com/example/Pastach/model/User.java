@@ -2,7 +2,6 @@ package com.example.Pastach.model;
 
 
 import jakarta.persistence.*;
-import jdk.jfr.Timestamp;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,8 +23,13 @@ import java.util.Set;
 @EqualsAndHashCode(of = "id")
 public class User implements UserDetails { // no constructors -> MapStruct create object automatically
     @Id
-    @Column(name = "id", nullable = false, updatable = false, unique = true)
-    private String id;
+    @Setter(AccessLevel.NONE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    @Column(name = "username", unique = true)
+    private String username;
 
     @Column(name = "password", nullable = false)
     private String password;
