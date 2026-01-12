@@ -25,7 +25,7 @@ public class ReactionCreatedEvent {
         private Long id;
         private String targetType;
         private Long targetId;
-        private String authorId;
+        private Long authorId;
         private String type;
         private Instant createdAt;
     }

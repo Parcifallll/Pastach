@@ -2,6 +2,5 @@ package com.example.Pastach.model;
 
 public enum RoleEnum {
     USER,
-    ADMIN,
-    GUEST
+    ADMIN
 }

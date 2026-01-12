@@ -28,7 +28,7 @@ public interface UserMapper {
     // service: default
     User toEntity(UserCreateDTO userCreateDTO);
 
-    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "username", ignore = true)
     @Mapping(target = "email", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "locked", ignore = true)

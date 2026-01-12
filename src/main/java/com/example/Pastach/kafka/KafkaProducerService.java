@@ -95,7 +95,7 @@ public class KafkaProducerService {
         try {
             ReactionCreatedEvent event = ReactionCreatedEvent.from(reaction);
             //key: authorId for user-based partitions and ordering
-            String key = reaction.getAuthorId();
+            String key = reaction.getAuthorId().toString();
 
             kafkaTemplate.send("pastach.reactions", key, event)
                     .whenComplete((result, ex) -> {
@@ -118,7 +118,7 @@ public class KafkaProducerService {
     public void sendReactionUpdated(Reaction reaction) {
         try {
             ReactionUpdatedEvent event = ReactionUpdatedEvent.from(reaction);
-            String key = reaction.getAuthorId();
+            String key = reaction.getAuthorId().toString();
 
             kafkaTemplate.send("pastach.reactions", key, event)
                     .whenComplete((result, ex) -> {
@@ -138,10 +138,10 @@ public class KafkaProducerService {
         }
     }
 
-    public void sendReactionDeleted(Long reactionId, String authorId) {
+    public void sendReactionDeleted(Long reactionId, Long authorId) {
         try {
             ReactionDeletedEvent event = ReactionDeletedEvent.from(reactionId, authorId);
-            String key = authorId;
+            String key = authorId.toString();
 
             kafkaTemplate.send("pastach.reactions", key, event)
                     .whenComplete((result, ex) -> {

@@ -30,7 +30,7 @@ public class ReactionService {
                                ReactionType type,
                                User user) {
 
-        String authorId = user.getId();
+        Long authorId = user.getId();
 
         // validate target exists
         if (targetType == ReactionTargetType.POST) {

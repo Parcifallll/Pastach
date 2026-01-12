@@ -15,7 +15,7 @@ public record CommentResponseDTO(Long id,
                                  String text,
                                  Long postId,
                                  String photoUrl,
-                                 String authorId,
+                                 Long authorId,
                                  Instant createdAt,
                                  long likesCount,
                                  long dislikesCount) {

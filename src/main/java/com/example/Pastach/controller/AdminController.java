@@ -19,20 +19,20 @@ public class AdminController {
 
     @PatchMapping("/{id}/roles")
     public ResponseEntity<UserResponseDTO> updateUserRoles(
-            @PathVariable String id,
+            @PathVariable Long id,
             @RequestBody Set<String> roles) {
         return ResponseEntity.ok(userService.updateRoles(id, roles));
     }
 
     @PatchMapping("/{id}/lock") //?locked=true
     public ResponseEntity<UserResponseDTO> toggleUserLock(
-            @PathVariable String id,
+            @PathVariable Long id,
             @RequestParam boolean locked) {
         return ResponseEntity.ok(userService.toggleLock(id, locked));
     }
 
     @DeleteMapping("/{id}/delete")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

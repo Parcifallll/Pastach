@@ -6,7 +6,7 @@ import com.example.Pastach.model.ReactionType;
 import java.time.Instant;
 
 public record ReactionResponseDTO(Long id,
-                                  String authorId,
+                                  Long authorId,
                                   ReactionType type,
                                   Instant createdAt) {
 }

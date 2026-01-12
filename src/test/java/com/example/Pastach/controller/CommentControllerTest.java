@@ -65,7 +65,7 @@ class CommentControllerTest {
     private final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule());
 
-    private User createUser(String id, RoleEnum... roles) {
+    private User createUser(Long id, RoleEnum... roles) {
         User user = new User();
         user.setId(id);
         user.setEmail(id + "@example.com");

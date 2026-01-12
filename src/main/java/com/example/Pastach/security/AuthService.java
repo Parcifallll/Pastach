@@ -26,14 +26,6 @@ public class AuthService {
 
     @Transactional
     public JwtResponse signup(SignupDTO dto) {
-        if (userRepository.existsByUsername(dto.username())) {
-            throw new UserAlreadyExistException("User with username '" + dto.username() + "' already exists");
-        }
-
-        if (userRepository.existsByEmail(dto.email())) {
-            throw new UserAlreadyExistException("User with email '" + dto.email() + "' already exists");
-        }
-
         User user = userService.createWithPassword(
                 dto.username(),
                 dto.email(),

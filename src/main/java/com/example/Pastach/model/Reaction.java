@@ -29,7 +29,7 @@ public class Reaction {
     private Long targetId;  // postId, commentId
 
     @Column(name = "author_id", nullable = false)
-    private String authorId;
+    private Long authorId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
@@ -39,7 +39,7 @@ public class Reaction {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    public Reaction(ReactionTargetType targetType, Long targetId, String authorId, ReactionType type) {
+    public Reaction(ReactionTargetType targetType, Long targetId, Long authorId, ReactionType type) {
         this.targetType = targetType;
         this.targetId = targetId;
         this.authorId = authorId;

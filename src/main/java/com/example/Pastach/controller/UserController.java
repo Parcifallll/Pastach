@@ -19,8 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -34,7 +32,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getById(@PathVariable String id) {
+    public ResponseEntity<UserResponseDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getById(id));
     }
 
@@ -78,21 +76,21 @@ public class UserController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<UserResponseDTO> update(
-            @PathVariable String id,
+            @PathVariable Long id,
             @Valid @RequestBody UserUpdateDTO dto,
             @AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(userService.updateById(id, dto, currentUser));
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteById(@PathVariable String userId) {
-        userService.deleteById(userId);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/password")
     public ResponseEntity<Void> changePassword(
-            @PathVariable String id,
+            @PathVariable Long id,
             @Valid @RequestBody PasswordChangeDTO dto,
             @AuthenticationPrincipal User currentUser) {
         userService.changePassword(id, dto, currentUser);

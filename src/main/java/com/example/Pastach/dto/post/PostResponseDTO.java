@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public record PostResponseDTO(
         Long id,
-        String authorId,
+        Long authorId,
         String text,
         String photoUrl,
         Instant createdAt,

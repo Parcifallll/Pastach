@@ -45,7 +45,7 @@ class CommentServiceTest {
     void create_success() {
         // Arrange
         User user = mock(User.class); // mock @AuthPrincipal User
-        String authorId = "userId"; // comment author
+        Long authorId = "userId"; // comment author
         when(user.getId()).thenReturn(authorId);
 
         Post post = new Post(); // commentsCount = 0

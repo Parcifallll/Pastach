@@ -25,7 +25,7 @@ public class ReactionUpdatedEvent {
         private Long id;
         private String targetType;
         private Long targetId;
-        private String authorId;
+        private Long authorId;
         private String type;  // new type (LIKE or DISLIKE)
         private Instant updatedAt;
     }

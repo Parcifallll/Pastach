@@ -4,6 +4,7 @@ import com.example.Pastach.dto.mapper.UserMapper;
 import com.example.Pastach.dto.user.PasswordChangeDTO;
 import com.example.Pastach.dto.user.UserResponseDTO;
 import com.example.Pastach.dto.user.UserUpdateDTO;
+import com.example.Pastach.exception.IncorrectParameterException;
 import com.example.Pastach.exception.UserAlreadyExistException;
 import com.example.Pastach.exception.UserNotFoundException;
 import com.example.Pastach.model.Role;
@@ -12,6 +13,7 @@ import com.example.Pastach.model.User;
 import com.example.Pastach.repository.RoleRepository;
 import com.example.Pastach.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -35,14 +37,18 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public User createWithPassword(String id, String email, String firstName,
+    public User createWithPassword(String username, String email, String firstName,
                                    String lastName, LocalDate birthday, String rawPassword) {
         if (userRepository.existsByEmail(email)) {
             throw new UserAlreadyExistException("User with email " + email + " already exists");
         }
 
+        if (userRepository.existsByUsername(username)) {
+            throw new UserAlreadyExistException("User with username '" + username + "' already exists");
+        }
+
         User user = new User();
-        user.setId(id);
+        user.setUsername(username);
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
@@ -59,7 +65,7 @@ public class UserService {
 
 
     @Transactional(readOnly = true)
-    public UserResponseDTO getById(String userId) {
+    public UserResponseDTO getById(Long userId) {
         return userRepository.findById(userId)
                 .map(userMapper::toResponseDto)
                 .orElseThrow(() -> new UserNotFoundException(userId));
@@ -74,7 +80,7 @@ public class UserService {
 
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public UserResponseDTO updateById(String userId, UserUpdateDTO dto, @AuthenticationPrincipal User currentUser) {
+    public UserResponseDTO updateById(Long userId, UserUpdateDTO dto, @AuthenticationPrincipal User currentUser) {
         if (!userId.equals(currentUser.getId())) {
             throw new AccessDeniedException("You can only update your own profile");
         }
@@ -82,16 +88,31 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
+        if (dto.username() != null) {
+            String trimmed = dto.username().trim();
+            if (trimmed.isEmpty()) {
+                throw new IncorrectParameterException("Username cannot be blank");
+            }
+            if (userRepository.existsByUsernameAndIdNot(dto.username(), userId)) {
+                throw new UserAlreadyExistException("User with username '" + dto.username() + "' already exists");
+            }
+        }
+
+        if (dto.email() != null) {
+            if (userRepository.existsByEmailAndIdNot(dto.email(), userId)) {
+                throw new UserAlreadyExistException("User with email " + dto.email() + " already exists");
+            }
+        }
+
         userMapper.updateFromDto(dto, user);
         user = userRepository.save(user);
         return userMapper.toResponseDto(user);
     }
 
 
-
     @Transactional
     @PreAuthorize("#userId == authentication.principal.id or hasRole('ADMIN')")
-    public void deleteById(String userId) {
+    public void deleteById(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
         userRepository.delete(user);
@@ -100,7 +121,7 @@ public class UserService {
 
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public void changePassword(String userId, PasswordChangeDTO dto, @AuthenticationPrincipal User currentUser) {
+    public void changePassword(Long userId, PasswordChangeDTO dto, @AuthenticationPrincipal User currentUser) {
         if (!userId.equals(currentUser.getId())) {
             throw new AccessDeniedException("You can only change your own password");
         }
@@ -118,7 +139,7 @@ public class UserService {
     // admin only
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public UserResponseDTO updateRoles(String userId, Set<String> roleNames) {
+    public UserResponseDTO updateRoles(Long userId, Set<String> roleNames) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
@@ -135,7 +156,7 @@ public class UserService {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public UserResponseDTO toggleLock(String userId, boolean locked) {
+    public UserResponseDTO toggleLock(Long userId, boolean locked) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 

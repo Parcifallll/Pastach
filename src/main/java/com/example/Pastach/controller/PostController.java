@@ -79,7 +79,7 @@ public class PostController {
 
     @GetMapping("/users/{authorId}/posts")
     public PagedModel<PostResponseDTO> getPostsByAuthorId(
-            @PathVariable String authorId,
+            @PathVariable Long authorId,
             @PageableDefault(size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<PostResponseDTO> page = postService.getByAuthorId(authorId, pageable);

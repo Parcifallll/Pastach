@@ -23,7 +23,7 @@ public class Comment {
     private Long id;
 
     @Column(name = "author_id")
-    private String authorId;
+    private Long authorId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)

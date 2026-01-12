@@ -14,7 +14,7 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     Optional<Reaction> findByTargetTypeAndTargetIdAndAuthorId(
             ReactionTargetType targetType,
             Long targetId,
-            String authorId
+            Long authorId
     );
 
     Page<Reaction> findByTargetTypeAndTargetId(
@@ -34,6 +34,6 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     void deleteByTargetTypeAndTargetIdAndAuthorId(
             ReactionTargetType targetType,
             Long targetId,
-            String authorId
+            Long authorId
     );
 }

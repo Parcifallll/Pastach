@@ -22,10 +22,10 @@ public class ReactionDeletedEvent {
     @NoArgsConstructor
     public static class ReactionDeletePayload {
         private Long id;
-        private String authorId;  // for invalidating user preferences
+        private Long authorId;  // for invalidating user preferences
     }
     
-    public static ReactionDeletedEvent from(Long reactionId, String authorId) {
+    public static ReactionDeletedEvent from(Long reactionId, Long authorId) {
         ReactionDeletePayload payload = new ReactionDeletePayload(reactionId, authorId);
         
         return new ReactionDeletedEvent(

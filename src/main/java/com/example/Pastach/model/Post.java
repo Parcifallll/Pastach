@@ -6,7 +6,6 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +24,7 @@ public class Post {
     private Long id;
 
     @Column(name = "author_id", nullable = false)
-    private String authorId;
+    private Long authorId;
 
     @Column(name = "text")
     private String text;
@@ -53,7 +52,7 @@ public class Post {
 
 
     // for PostService and PostMapper
-    public Post(String text, String photoUrl, String authorId) {
+    public Post(String text, String photoUrl, Long authorId) {
         this.text = text;
         this.photoUrl = photoUrl;
         this.authorId = authorId;

@@ -37,7 +37,7 @@ public class PostService {
     @PreAuthorize("isAuthenticated()")
     @RequireNonLockedUser
     @Transactional
-    public PostResponseDTO create(PostCreateDTO dto, String authorId) {
+    public PostResponseDTO create(PostCreateDTO dto, Long authorId) {
         if (!dto.hasContent()) throw new IllegalArgumentException("Post can't be empty");
 
         // Save post to database
@@ -65,7 +65,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponseDTO> getByAuthorId(String authorId, Pageable pageable) {
+    public Page<PostResponseDTO> getByAuthorId(Long authorId, Pageable pageable) {
         if (!userRepository.existsById(authorId)) {
             throw new UserNotFoundException(authorId);
         }

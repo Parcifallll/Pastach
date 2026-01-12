@@ -23,7 +23,7 @@ public class PostCreatedEvent {
     @NoArgsConstructor
     public static class PostPayload {
         private Long id;
-        private String authorId;
+        private Long authorId;
         private String text;
         private String photoUrl;
         private Instant createdAt;
