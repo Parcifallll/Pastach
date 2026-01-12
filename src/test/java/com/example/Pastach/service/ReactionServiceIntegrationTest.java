@@ -80,7 +80,7 @@ class ReactionServiceIntegrationTest {
                 .orElseThrow(() -> new IllegalStateException("USER not found"));
 
         user = new User();
-        user.setId("userId");
+        user.setUsername("username");
         user.setEmail("user@example.com");
         user.setPassword("password");
         user.setFirstName("roman");

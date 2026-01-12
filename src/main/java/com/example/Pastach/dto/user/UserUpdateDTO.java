@@ -9,16 +9,13 @@ import java.time.LocalDate;
 
 @Builder
 public record UserUpdateDTO(
-        @NotBlank
         String username,
-
-        @NotBlank @Email
+        @Email
         String email,
 
-        @NotBlank
         String firstName,
 
-        @NotBlank
+
         String lastName,
 
         LocalDate birthday

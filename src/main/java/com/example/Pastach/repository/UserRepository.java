@@ -10,10 +10,13 @@ import java.util.Optional;
 
 // Do not write a realization: Spring Data JPA generates JPQL (entities -> Hibernate: entityManager parse JPQL into SQL
 @Repository
-public interface UserRepository extends JpaRepository<User, String> {
+public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
+
     Optional<User> findByEmail(String email);
+
     boolean existsByEmail(String email);
+
     boolean existsByUsername(String username);
 
     boolean existsByUsernameAndIdNot(String username, Long userId);
