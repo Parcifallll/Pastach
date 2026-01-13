@@ -20,7 +20,10 @@ def parse_timestamp(value) -> datetime:
     elif isinstance(value, str):
         if 'Z' in value:
             value = value.replace('Z', '+00:00')
-        return datetime.fromisoformat(value)
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return datetime.utcnow()
     return value
 
 
@@ -50,14 +53,12 @@ class KafkaConsumerService:
         try:
             async for message in self.consumer:
                 topic = message.topic
-                key = message.key.decode('utf-8') if message.key else None
                 value = message.value
                 event_type = value.get('eventType', '')
 
-                logger.info(f"Received {event_type} from {topic}, key: {key}")
+                logger.info(f"Received {event_type} from {topic}")
 
                 try:
-                    # Route by eventType
                     if event_type == 'post.created':
                         await self._handle_post_created(value)
                     elif event_type == 'post.updated':
@@ -83,7 +84,12 @@ class KafkaConsumerService:
     async def _handle_post_created(self, event: dict):
         payload = event['payload']
         post_id = payload['id']
-        text = payload.get('text')
+
+        if 'text' not in payload:
+            logger.warning(f"Post {post_id} without text field")
+            text = None
+        else:
+            text = payload['text']
 
         created_at = parse_timestamp(payload['createdAt'])
 
@@ -96,15 +102,13 @@ class KafkaConsumerService:
                 return
 
             embedding = None
-            if text:
+            if text and text.strip():
                 emb_array = embedding_model.encode(text)
                 embedding = emb_array[0] if emb_array.ndim == 2 else emb_array
 
             post = Post(
                 id=post_id,
-                author_id=payload.get('authorId'),
-                text=text,
-                photo_url=payload.get('photoUrl'),
+                author_id=int(payload['authorId']),
                 embedding=embedding,
                 created_at=created_at
             )
@@ -116,7 +120,8 @@ class KafkaConsumerService:
     async def _handle_post_updated(self, event: dict):
         payload = event['payload']
         post_id = payload['id']
-        new_text = payload.get('text')
+
+        text = payload.get('text')
 
         async with async_session_factory() as session:
             result = await session.execute(
@@ -128,16 +133,15 @@ class KafkaConsumerService:
                 logger.warning(f"Post {post_id} not found for update")
                 return
 
-            post.text = new_text
-
-            if new_text:
-                emb_array = embedding_model.encode(new_text)
-                post.embedding = emb_array[0] if emb_array.ndim == 2 else emb_array
-            else:
-                post.embedding = None
+            if text is not None:
+                if text.strip():
+                    emb_array = embedding_model.encode(text)
+                    post.embedding = emb_array[0] if emb_array.ndim == 2 else emb_array
+                else:
+                    post.embedding = None
 
             await session.commit()
-            logger.info(f"Updated post {post_id}")
+            logger.info(f"Updated post {post_id} embedding")
 
     async def _handle_post_deleted(self, event: dict):
         payload = event['payload']
@@ -159,7 +163,7 @@ class KafkaConsumerService:
     async def _handle_reaction_created(self, event: dict):
         payload = event['payload']
         reaction_id = payload['id']
-        author_id = payload['authorId']
+        author_id = int(payload['authorId'])
 
         created_at = parse_timestamp(payload['createdAt'])
 
@@ -192,7 +196,7 @@ class KafkaConsumerService:
     async def _handle_reaction_updated(self, event: dict):
         payload = event['payload']
         reaction_id = payload['id']
-        author_id = payload['authorId']
+        author_id = int(payload['authorId'])
 
         async with async_session_factory() as session:
             result = await session.execute(
@@ -218,7 +222,7 @@ class KafkaConsumerService:
     async def _handle_reaction_deleted(self, event: dict):
         payload = event['payload']
         reaction_id = payload['id']
-        author_id = payload['authorId']
+        author_id = int(payload['authorId'])
 
         async with async_session_factory() as session:
             result = await session.execute(

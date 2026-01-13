@@ -8,7 +8,7 @@ GREEN := \033[0;32m
 BLUE := \033[0;34m
 NC := \033[0m
 
-.PHONY: help dev infra infra-up infra-down run logs clean clean-all \
+.PHONY: help dev infra infra-up infra-down run logs \
         status ps db-connect alembic-upgrade alembic-downgrade
 
 help:
@@ -68,10 +68,3 @@ ps: status
 
 logs: ## show logs
 	@$(DOCKER_COMPOSE) logs --follow
-
-clean: ## stop containers
-	@$(DOCKER_COMPOSE) down
-
-clean-all: ## full cleanup (volumes and images)
-	@$(DOCKER_COMPOSE) down --volumes --remove-orphans
-	@docker image prune --force
