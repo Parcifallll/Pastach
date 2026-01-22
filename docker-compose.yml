@@ -12,7 +12,8 @@ services:
       REDIS_PORT: ${REDIS_PORT}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     ports:
-      - "8000:8000"
+      - "8000:8000" #FastAPI
+      - "50051:50051" # gRPC
     depends_on:
       postgres:
         condition: service_healthy

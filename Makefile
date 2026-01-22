@@ -69,5 +69,9 @@ ps: status
 logs: ## show logs
 	@$(DOCKER_COMPOSE) logs --follow
 
-proto: ## generates two files from .proto -
-	python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. recposts.proto
+proto: ## generates classes-serialization + its call, from .proto
+	python -m grpc_tools.protoc \
+		-Iapp/grpc/proto \
+		--python_out=app/grpc/proto \
+		--grpc_python_out=app/grpc/proto \
+		app/grpc/proto/recposts.proto
