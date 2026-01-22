@@ -27,3 +27,7 @@ httpx==0.26.0
 
 # Kafka
 aiokafka==0.12.0
+
+# grpc for rec posts
+grpcio==1.62.2
+grpcio-tools==1.62.2

@@ -68,3 +68,6 @@ ps: status
 
 logs: ## show logs
 	@$(DOCKER_COMPOSE) logs --follow
+
+proto: ## generates two files from .proto -
+	python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. recposts.proto
