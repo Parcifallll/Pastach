@@ -4,13 +4,6 @@ DOCKER_COMPOSE := docker-compose
 MAVEN := mvn
 INFRA_SERVICES := db zookeeper kafka
 
-# colors for printing
-RED := \033[0;31m
-GREEN := \033[0;32m
-YELLOW := \033[1;33m
-BLUE := \033[0;34m
-NC := \033[0m # No Color
-
 # Phony targets
 .PHONY: help dev infra infra-up infra-down build run logs \
         test restart db-connect kafka-topics
@@ -46,8 +39,8 @@ build: ## rebuild JAR (full clean build, skip tests)
 fast: ## incremental build JAR (no clean)
 	@$(MAVEN) package -DskipTests
 
-compile: ## compile only
-	@$(MAVEN) compile -DskipTests
+compile: ## compile (use for grpc-files generation from .proto)
+	@$(MAVEN) clean compile -DskipTests
 
 run: infra-up ## run app with infrastructure
 	@$(DOCKER_COMPOSE) up --build app
