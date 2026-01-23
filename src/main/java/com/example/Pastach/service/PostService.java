@@ -23,6 +23,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,6 +35,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostMapper postMapper;
     private final KafkaProducerService kafkaProducer;
+    private final RecommendationGrpcClient recommendationGrpcClient;
 
 
     @PreAuthorize("isAuthenticated()")
@@ -121,6 +125,24 @@ public class PostService {
 
         // Send event to Kafka
         kafkaProducer.sendPostDeleted(postId);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public List<PostResponseDTO> getRecommendedPosts(Long userId, int limit) {
+        log.info("Request for recommendations for userId={}, limit={}", userId, limit);
+
+        List<Long> recommendedIds = recommendationGrpcClient.getRecommendedPostIds(userId, limit, true);
+
+        if (recommendedIds.isEmpty()) {
+            log.warn("Recommendations were not received — fallback to recent posts");
+            List<Post> recentPosts = postRepository.findTopByOrderByCreatedAtDesc(limit);
+            return recentPosts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
+        }
+
+        List<Post> posts = postRepository.findAllByIdInOrderByField(recommendedIds);
+
+        return posts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
     }
 
 }

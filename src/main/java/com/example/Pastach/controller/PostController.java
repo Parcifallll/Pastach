@@ -22,6 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/posts")
@@ -144,5 +146,16 @@ public class PostController {
             @AuthenticationPrincipal User user) {
         reactionService.toggleReaction(ReactionTargetType.POST, postId, dto.type(), user);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/recommended")
+    public ResponseEntity<List<PostResponseDTO>> getRecommendedPosts(
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "10") int limit,
+            @AuthenticationPrincipal User currentUser) {
+
+        List<PostResponseDTO> recommendations = postService.getRecommendedPosts(userId, limit);
+
+        return ResponseEntity.ok(recommendations);
     }
 }
