@@ -11,9 +11,34 @@ services:
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      GRPC_SERVER_HOST: rec-sys-grpc-server  # FastAPI can connect to grpc-server
+      GRPC_SERVER_PORT: 50051
     ports:
-      - "8000:8000" #FastAPI
-      - "50051:50051" # gRPC
+      - "8000:8000"
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      grpc:
+        condition: service_started
+    restart: always
+    networks:
+      - pastach_default
+
+  grpc:
+    build: .
+    container_name: rec-sys-grpc-server
+    env_file: .env
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+    ports:
+      - "50051:50051"
+    command: ["python", "-m", "app.grpc.grpc_server"]
     depends_on:
       postgres:
         condition: service_healthy
