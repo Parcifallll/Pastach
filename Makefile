@@ -69,7 +69,9 @@ ps: status
 logs: ## show logs
 	@$(DOCKER_COMPOSE) logs --follow
 
-proto: ## generates classes-serialization + its call, from .proto
+## generates classes-serialization + its call, from .proto
+## NB: after auto-generation it is necessary to change import to app.grpc.proto.recposts_pb2
+proto:
 	python -m grpc_tools.protoc \
 		-Iapp/grpc/proto \
 		--python_out=app/grpc/proto \

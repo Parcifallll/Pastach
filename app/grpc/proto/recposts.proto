@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package recsys;
+package recposts;
 
-option java_package = "com.example.Pastach.grpc.recposts";
+option java_package = "com.example.Pastach.grpc";
 option java_multiple_files = true;
 option java_outer_classname = "RecPostsProto";
 

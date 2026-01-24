@@ -15,7 +15,7 @@ class RecommendationServiceStub(object):
             channel: A grpc.Channel.
         """
         self.GetRecommendations = channel.unary_unary(
-                '/recsys.RecommendationService/GetRecommendations',
+                '/recposts.RecommendationService/GetRecommendations',
                 request_serializer=recposts__pb2.GetRecommendationsRequest.SerializeToString,
                 response_deserializer=recposts__pb2.GetRecommendationsResponse.FromString,
                 )
@@ -40,7 +40,7 @@ def add_RecommendationServiceServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'recsys.RecommendationService', rpc_method_handlers)
+            'recposts.RecommendationService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -59,7 +59,7 @@ class RecommendationService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/recsys.RecommendationService/GetRecommendations',
+        return grpc.experimental.unary_unary(request, target, '/recposts.RecommendationService/GetRecommendations',
             recposts__pb2.GetRecommendationsRequest.SerializeToString,
             recposts__pb2.GetRecommendationsResponse.FromString,
             options, channel_credentials,

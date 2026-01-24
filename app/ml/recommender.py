@@ -4,7 +4,8 @@ from typing import Optional
 import numpy as np
 import redis.asyncio as aioredis
 from loguru import logger
-from sqlalchemy import select, and_, not_, func
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import select, and_, not_, func, cast
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Post, Reaction, UserPreference
@@ -82,7 +83,7 @@ class ContentBasedRecommender:
         )
         user_pref = result.scalar_one_or_none()
 
-        if user_pref and user_pref.preference_embedding:
+        if user_pref and getattr(user_pref, 'preference_embedding', None) is not None:
             embedding = np.array(user_pref.preference_embedding)
             if embedding.size == 0:
                 return None
@@ -199,6 +200,7 @@ class ContentBasedRecommender:
             exclude_author_posts: bool = True,
             redis_client: Optional[aioredis.Redis] = None
     ) -> list[PostWithEmbedding]:
+
         user_embedding = await self.get_user_preference_embedding(user_id, session, redis_client)
 
         if user_embedding is None:
@@ -209,8 +211,14 @@ class ContentBasedRecommender:
         if exclude_author_posts:
             query = query.where(Post.author_id != user_id)
 
+        if isinstance(user_embedding, np.ndarray):
+            user_embedding = user_embedding.tolist()
+
         query = query.order_by(
-            func.cosine_distance(Post.embedding, user_embedding)
+            func.cosine_distance(
+                Post.embedding,
+                cast(user_embedding, Vector(384))
+            )
         ).limit(limit * 3)
 
         result = await session.execute(query)
