@@ -16,11 +16,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Page<Post> findAll(Pageable pageable);
 
+    // get posts by ids (from rec system), remaining order! Order is set in Python microservice (initially by similarity score)
     @Query(value = """
     SELECT p.*
-    FROM posts p
-    WHERE p.id = ANY(:ids)
-    ORDER BY array_position(:ids, p.id)
+    FROM unnest(CAST(:ids AS bigint[])) WITH ORDINALITY AS input(id, ord) --create temp table id|ord, ids[] = Long[]
+    INNER JOIN posts p ON p.id = input.id
+    ORDER BY input.ord
     """, nativeQuery = true)
     List<Post> findAllByIdInOrderByField(@Param("ids") Long[] ids);
 
