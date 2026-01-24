@@ -16,6 +16,7 @@ import com.example.Pastach.security.RequireNonLockedUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -133,14 +134,16 @@ public class PostService {
         log.info("Request for recommendations for userId={}, limit={}", userId, limit);
 
         List<Long> recommendedIds = recommendationGrpcClient.getRecommendedPostIds(userId, limit, true);
-
         if (recommendedIds.isEmpty()) {
             log.warn("Recommendations were not received — fallback to recent posts");
-            List<Post> recentPosts = postRepository.findTopByOrderByCreatedAtDesc(limit);
+            Pageable pageable = PageRequest.of(0, limit); // page=0, size=limit
+            List<Post> recentPosts = postRepository.findTopNByOrderByCreatedAtDesc(pageable)
+                    .getContent();
             return recentPosts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
         }
 
-        List<Post> posts = postRepository.findAllByIdInOrderByField(recommendedIds);
+        Long[] idsArray = recommendedIds.toArray(new Long[0]);
+        List<Post> posts = postRepository.findAllByIdInOrderByField(idsArray);
 
         return posts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
     }

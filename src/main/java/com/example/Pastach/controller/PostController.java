@@ -148,12 +148,11 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/recommended")
+    @GetMapping("/recommendations")
     public ResponseEntity<List<PostResponseDTO>> getRecommendedPosts(
-            @RequestParam Long userId,
-            @RequestParam(defaultValue = "10") int limit,
-            @AuthenticationPrincipal User currentUser) {
+            @RequestParam(defaultValue = "10") int limit, @AuthenticationPrincipal User currentUser) {
 
+        Long userId = currentUser.getId();
         List<PostResponseDTO> recommendations = postService.getRecommendedPosts(userId, limit);
 
         return ResponseEntity.ok(recommendations);

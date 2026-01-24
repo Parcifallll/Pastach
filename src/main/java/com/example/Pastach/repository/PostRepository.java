@@ -16,9 +16,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Page<Post> findAll(Pageable pageable);
 
+    @Query(value = """
+    SELECT p.*
+    FROM posts p
+    WHERE p.id = ANY(:ids)
+    ORDER BY array_position(:ids, p.id)
+    """, nativeQuery = true)
+    List<Post> findAllByIdInOrderByField(@Param("ids") Long[] ids);
 
-    @Query("SELECT p FROM Post p WHERE p.id IN :ids ORDER BY FIELD(p.id, :ids)")
-    List<Post> findAllByIdInOrderByField(@Param("ids") List<Long> ids);
-
-    List<Post> findTopByOrderByCreatedAtDesc(int limit);  // for fallback: @Query("SELECT p FROM Post p ORDER BY p.createdAt DESC LIMIT :limit")
+    Page<Post> findTopNByOrderByCreatedAtDesc(Pageable pageable);
 }
