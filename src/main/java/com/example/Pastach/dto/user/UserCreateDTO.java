@@ -11,7 +11,7 @@ public record UserCreateDTO(
         @NotBlank
         String username,
 
-        @NotBlank @Email
+        @Email
         String email,
 
         @NotBlank

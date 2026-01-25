@@ -39,7 +39,7 @@ public class UserService {
     @Transactional
     public User createWithPassword(String username, String email, String firstName,
                                    String lastName, LocalDate birthday, String rawPassword) {
-        if (userRepository.existsByEmail(email)) {
+        if (email != null && userRepository.existsByEmail(email)) {
             throw new UserAlreadyExistException("User with email " + email + " already exists");
         }
 

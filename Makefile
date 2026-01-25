@@ -6,7 +6,7 @@ INFRA_SERVICES := db zookeeper kafka
 
 # Phony targets
 .PHONY: help dev infra infra-up infra-down build run logs \
-        test restart db-connect kafka-topics
+        test restart db-connect kafka-topics netstat
 
 help:
 	@echo "$(GREEN)Available commands:$(NC)"
@@ -92,3 +92,7 @@ logs-infra: infra-logs ## alias for infra-logs
 # DOCKER
 docker-prune: ## clean un-used resources
 	@docker system prune --force
+
+# check port usage
+netstat:
+	@netstat -ano | findstr ":$(filter-out $@,$(MAKECMDGOALS))"

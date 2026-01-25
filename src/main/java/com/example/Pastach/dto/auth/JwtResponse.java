@@ -9,7 +9,7 @@ public record JwtResponse(
         String tokenType,
         Long expiresIn
 ) {
-    public JwtResponse(String accessToken, String refreshToken) {
-        this(accessToken, refreshToken, "Bearer", 900L); // 15 minutes
+    public JwtResponse(String accessToken, String refreshToken, Long expiresIn) {
+        this(accessToken, refreshToken, "Bearer", expiresIn);
     }
 }

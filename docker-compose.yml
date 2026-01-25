@@ -12,6 +12,8 @@ services:
       kafka:
         condition: service_healthy
     environment:
+      GRPC_RECSYS_HOST: rec-sys-grpc-server
+      GRPC_RECSYS_PORT: 50051
       SPRING_DATASOURCE_URL: ${DB_URL}
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}

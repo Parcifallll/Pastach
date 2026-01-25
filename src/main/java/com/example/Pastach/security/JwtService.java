@@ -95,4 +95,12 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
+    public long getAccessExpirationMs() {
+        return accessExpiration;
+    }
+
+    public long getRefreshExpirationMs() {
+        return refreshExpiration;
+    }
 }

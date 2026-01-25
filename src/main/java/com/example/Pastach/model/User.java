@@ -28,7 +28,7 @@ public class User implements UserDetails { // no constructors -> MapStruct creat
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "username", unique = true)
+    @Column(name = "username", unique = true, nullable = false)
     private String username;
 
     @Column(name = "password", nullable = false)
@@ -40,7 +40,7 @@ public class User implements UserDetails { // no constructors -> MapStruct creat
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(name = "email", nullable = false, unique = true, updatable = false)
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "birthday", nullable = false)

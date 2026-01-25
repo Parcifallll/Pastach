@@ -15,7 +15,6 @@ public record UserUpdateDTO(
 
         String firstName,
 
-
         String lastName,
 
         LocalDate birthday

@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.concurrent.TimeUnit;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -38,20 +40,23 @@ public class AuthService {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new JwtResponse(accessToken, refreshToken);
+        long expiresInSeconds = TimeUnit.MILLISECONDS.toSeconds(jwtService.getAccessExpirationMs());
+
+        return new JwtResponse(accessToken, refreshToken, expiresInSeconds);
     }
 
     @Transactional(readOnly = true)
     public JwtResponse login(LoginDTO dto) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.email(), dto.password())
+                new UsernamePasswordAuthenticationToken(dto.username(), dto.password())
         );
 
         User user = (User) authentication.getPrincipal();
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new JwtResponse(accessToken, refreshToken);
+        long expiresInSeconds = TimeUnit.MILLISECONDS.toSeconds(jwtService.getAccessExpirationMs());
+        return new JwtResponse(accessToken, refreshToken, expiresInSeconds);
     }
 
     @Transactional(readOnly = true)
@@ -65,6 +70,8 @@ public class AuthService {
         }
 
         String newAccessToken = jwtService.generateAccessToken(user);
-        return new JwtResponse(newAccessToken, refreshToken);
+
+        long expiresInSeconds = TimeUnit.MILLISECONDS.toSeconds(jwtService.getAccessExpirationMs());
+        return new JwtResponse(newAccessToken, refreshToken, expiresInSeconds);
     }
 }
