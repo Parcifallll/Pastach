@@ -10,9 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "users", schema = "public")
@@ -43,7 +41,7 @@ public class User implements UserDetails { // no constructors -> MapStruct creat
     @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "birthday", nullable = false)
+    @Column(name = "birthday")
     private LocalDate birthday;
 
     @Column(name = "locked")
@@ -59,6 +57,9 @@ public class User implements UserDetails { // no constructors -> MapStruct creat
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RefreshToken> refreshTokens = new HashSet<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toString())).toList();
@@ -66,7 +67,7 @@ public class User implements UserDetails { // no constructors -> MapStruct creat
 
     @Override
     public String getUsername() { // for auth
-        return email;
+        return username;
     }
 
     @Override
