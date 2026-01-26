@@ -5,6 +5,7 @@ spring:
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -38,12 +39,20 @@ spring:
       retries: 3
       properties:
         enable.idempotence: true # exactly one delivery
-        spring.json.add.type.headers: false  # don't add __TypeId__ header
+        spring.json.add.type.headers: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DB:0}
+
+
 
 jwt:
   secret: ${JWT_SECRET:5v8y/B?E(H+MbQeThWmZq4t7w!z$C&F)J@NcRfUjXn2r5u8x/A?D*G-KaPdSgVkY}
-  access-expiration: ${JWT_ACCESS_EXPIRATION:180000} # 30 minutes
-  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days
+  access-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000} # 7 days
 
 grpc:
   host: ${GRPC_RECSYS_HOST:rec-sys-grpc-server} #if grpc-server runs on Docker (not localhost)

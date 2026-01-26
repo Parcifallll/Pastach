@@ -2,7 +2,7 @@
 PROJECT_NAME := pastach
 DOCKER_COMPOSE := docker-compose
 MAVEN := mvn
-INFRA_SERVICES := db zookeeper kafka
+INFRA_SERVICES := db zookeeper kafka redis
 
 # Phony targets
 .PHONY: help dev infra infra-up infra-down build run logs \
