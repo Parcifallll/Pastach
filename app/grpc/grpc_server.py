@@ -7,6 +7,9 @@ from app.database.postgres import async_session_factory
 from loguru import logger
 import asyncio
 
+from config import settings
+
+
 class RecommendationServiceServicer(recposts_pb2_grpc.RecommendationServiceServicer):
     async def GetRecommendations(self, request, context):
         logger.info(f"gRPC request: user_id={request.user_id}, limit={request.limit}, exclude={request.exclude_author_posts}")
@@ -43,7 +46,7 @@ async def serve():
     recposts_pb2_grpc.add_RecommendationServiceServicer_to_server(
         RecommendationServiceServicer(), server
     )
-    port = 50051
+    port = settings.RECSYS_GRPC_PORT
     server.add_insecure_port(f'[::]:{port}')
     logger.info(f"gRPC server is running on port {port}")
     await server.start()

@@ -11,6 +11,7 @@ from config import settings
 
 config = context.config
 
+print("Using sync URL:", settings.DATABASE_URL_SYNC)
 config.set_main_option('sqlalchemy.url', settings.DATABASE_URL_SYNC)
 
 if config.config_file_name is not None:

@@ -20,7 +20,7 @@ class RecommendationService:
 
     async def init_redis(self):
         try:
-            redis_url = f"redis://:{settings.REDIS_PASSWORD}@{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}"
+            redis_url = f"redis://:{settings.RECSYS_REDIS_PASSWORD}@{settings.RECSYS_REDIS_HOST}:{settings.RECSYS_REDIS_PORT}/{settings.RECSYS_REDIS_DB}"
             self.redis_client = await aioredis.from_url(
                 redis_url,
                 encoding="utf-8",

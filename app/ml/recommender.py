@@ -61,7 +61,7 @@ class ContentBasedRecommender:
             embedding_bytes = embedding.astype(np.float32).tobytes()
             await redis_client.setex(
                 cache_key,
-                settings.PREFERENCE_CACHE_TTL,
+                settings.RECSYS_REDIS_TTL,
                 embedding_bytes
             )
         except Exception as e:

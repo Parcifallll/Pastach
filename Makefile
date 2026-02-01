@@ -1,7 +1,7 @@
 PROJECT_NAME := recommendation-system
 DOCKER_COMPOSE := docker-compose
 PYTHON := python3
-INFRA_SERVICES := postgres redis
+INFRA_SERVICES := recsys-postgres recsys-redis recsys-grpc-server
 
 RED := \033[0;31m
 GREEN := \033[0;32m
@@ -48,23 +48,26 @@ app-restart: app-stop run ## restart app
 
 
 redis-connect:
-	@docker exec -it rec-sys-redis redis-cli -a dev_redis
+	@docker exec -it recsys-redis redis-cli -a dev_redis
 db-connect: ## connect to PostgreSQL
 	@$(DOCKER_COMPOSE) exec postgres psql --username $$(grep POSTGRES_USER .env | cut --delimiter='=' --fields=2) --dbname $$(grep POSTGRES_DB .env | cut --delimiter='=' --fields=2)
 
 alembic-upgrade: ## run migrations
-	@$(DOCKER_COMPOSE) exec app alembic upgrade head
+	@$(DOCKER_COMPOSE) exec recsys-app alembic upgrade head
 
 alembic-downgrade: ## rollback migrations
-	@$(DOCKER_COMPOSE) exec app alembic downgrade -1
+	@$(DOCKER_COMPOSE) exec recsys-app alembic downgrade -1
 
 alembic-history: ## migration history
-	@$(DOCKER_COMPOSE) exec app alembic history
+	@$(DOCKER_COMPOSE) exec recsys-app alembic history
 
 status: ## services status
 	@docker ps
 
 ps: status
+
+storage:
+	@docker system df -v
 
 logs: ## show logs
 	@$(DOCKER_COMPOSE) logs --follow
