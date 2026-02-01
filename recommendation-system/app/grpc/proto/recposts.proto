@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package recposts;
+
+option java_package = "com.example.Pastach.grpc";
+option java_multiple_files = true;
+option java_outer_classname = "RecPostsProto";
+
+message GetRecommendationsRequest {
+  int64 user_id = 1;
+  int32 limit = 2;
+  bool exclude_author_posts = 3;
+}
+
+message RecommendedPost {
+  int64 post_id = 1;
+  double similarity_score = 2;
+}
+
+message GetRecommendationsResponse {
+  int64 user_id = 1;
+  repeated RecommendedPost recommendations = 2;
+  int32 total_count = 3;
+}
+
+service RecommendationService {
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse) {}
+}
