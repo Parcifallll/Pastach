@@ -1,12 +1,12 @@
 # VARIABLES
-PROJECT_NAME := pastach
-DOCKER_COMPOSE := docker-compose
+PROJECT_NAME := backend-app
+DOCKER_COMPOSE := docker compose
 MAVEN := mvn
-INFRA_SERVICES := db zookeeper kafka redis
+INFRA_SERVICES := backend-postgres zookeeper kafka backend-redis
 
 # Phony targets
 .PHONY: help dev infra infra-up infra-down build run logs \
-        test restart db-connect kafka-topics netstat
+        test restart db-connect kafka-topics netstat tasklist
 
 help:
 	@echo "$(GREEN)Available commands:$(NC)"
@@ -16,14 +16,11 @@ help:
 	@echo ""
 
 # DEVELOPMENT
-debug:
-	@$(MAVEN) spring-boot:run
-dev: fast run ## build JAR (without clean) + run app and infr (if it's not running)
-dev-all: build run ## clean development (full rebuild)
+dev: infra build  ## build JAR (without clean) + run app and infra (app is not running)
+run: build full-build ## clean development (full rebuild)
 
 # INFRASTRUCTURE
-infra: infra-up
-infra-up: ## run all infrastructure services (except app) without logs (--detached, -d for short flag)
+infra: ## run all infrastructure services (except app) without logs (--detached, -d for short flag)
 	@$(DOCKER_COMPOSE) up --detach $(INFRA_SERVICES)
 
 infra-down: ## stop all infrastructure services
@@ -33,8 +30,12 @@ infra-logs: ## show infrastructure logs
 	@$(DOCKER_COMPOSE) logs --follow $(INFRA_SERVICES)
 
 # APPLICATION
+
 build: ## rebuild JAR (full clean build, skip tests)
 	@$(MAVEN) clean package -DskipTests
+
+full-build: infra ## run full-app in docker
+	@$(DOCKER_COMPOSE) up --build backend-app
 
 fast: ## incremental build JAR (no clean)
 	@$(MAVEN) package -DskipTests
@@ -42,10 +43,7 @@ fast: ## incremental build JAR (no clean)
 compile: ## compile (use for grpc-files generation from .proto)
 	@$(MAVEN) clean compile -DskipTests
 
-run: infra-up ## run app with infrastructure
-	@$(DOCKER_COMPOSE) up --build app
-
-run-detached: infra-up ## run app without logs
+run-detached: infra ## run app without logs
 	@$(DOCKER_COMPOSE) up --build --detach app
 
 app-logs: ## show app logs
@@ -56,9 +54,11 @@ app-stop: ## stop app
 
 app-restart: app-stop run ## restart the app
 
+down: infra-down infra-down
+
 # DATABASE
 db-connect: ## connect to PostgreSQL
-	@$(DOCKER_COMPOSE) exec db psql --username $$(grep DB_USERNAME .env | cut --delimiter='=' --fields=2) --dbname PastachDB
+	@$(DOCKER_COMPOSE) exec db psql --username $$(grep DB_USERNAME .env | cut --delimiter='=' --fields=2) --dbname backend
 
 # KAFKA
 kafka-topics: ## show kafka topics
@@ -93,6 +93,15 @@ logs-infra: infra-logs ## alias for infra-logs
 docker-prune: ## clean un-used resources
 	@docker system prune --force
 
+ps: ps
+	@$(DOCKER_COMPOSE) ps
+
+storage:
+	@docker system df -v
+
 # check port usage
 netstat:
 	@netstat -ano | findstr ":$(filter-out $@,$(MAKECMDGOALS))"
+
+tasklist:
+	@tasklist | findstr "$(filter-out $@,$(MAKECMDGOALS))"

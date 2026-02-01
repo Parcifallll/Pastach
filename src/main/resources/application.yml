@@ -1,9 +1,9 @@
 # for local dev
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5434/PastachDB}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:admin}
+    url: ${BACKEND_POSTGRES_URL:jdbc:postgresql://localhost:5433/backend}
+    username: ${BACKEND_POSTGRES_USER:postgres}
+    password: ${BACKEND_POSTGRES_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -21,39 +21,38 @@ spring:
     locations: classpath:db/migration
     default-schema: public
     loggers: slf4j
-  security:
-    user:
-      name: ${SECURITY_USERNAME:admin}
-      password: ${SECURITY_PASSWORD:admin}
   sql:
     init:
       mode: never
 
   # Kafka Configuration
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all  # wait for all replicas
       retries: 3
       properties:
-        enable.idempotence: true # exactly one delivery
+        enable.idempotence: true # one delivery
         spring.json.add.type.headers: false
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:admin}
-      database: ${REDIS_DB:0}
+      host: ${BACKEND_REDIS_HOST:localhost}
+      port: ${BACKEND_REDIS_PORT:6379}
+      password: ${BACKEND_REDIS_PASSWORD:admin}
+      database: ${BACKEND_REDIS_DB:0}
 
-
+  security:
+    user:
+      name: ${BACKEND_SECURITY_USERNAME:admin}
+      password: ${BACKEND_SECURITY_PASSWORD:admin}
 
 jwt:
-  secret: ${JWT_SECRET:5v8y/B?E(H+MbQeThWmZq4t7w!z$C&F)J@NcRfUjXn2r5u8x/A?D*G-KaPdSgVkY}
-  access-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
-  refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000} # 7 days
+  secret: ${BACKEND_JWT_SECRET:5v8y/B?E(H+MbQeThWmZq4t7w!z$C&F)J@NcRfUjXn2r5u8x/A?D*G-KaPdSgVkY}
+  access-expiration: ${BACKEND_JWT_ACCESS_EXPIRATION:1800000}
+  refresh-expiration: ${BACKEND_JWT_REFRESH_EXPIRATION:2592000000} # 30 days
 
 grpc:
-  host: ${GRPC_RECSYS_HOST:rec-sys-grpc-server} #if grpc-server runs on Docker (not localhost)
-  port: ${GRPC_RECSYS_PORT:50051}
+  host: ${RECSYS_GRPC_HOST:localhost}
+  port: ${RECSYS_GRPC_PORT:50051}

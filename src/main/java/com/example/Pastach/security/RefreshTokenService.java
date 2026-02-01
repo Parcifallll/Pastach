@@ -61,7 +61,7 @@ public class RefreshTokenService {
         redisTemplate.opsForSet().add(userTokensKey, tokenHash);
         redisTemplate.expire(userTokensKey, ttlSeconds, TimeUnit.SECONDS); // TTL from last added session
 
-        log.debug("Saved refresh token for user: {}", user.getUsername());
+        log.info("Saved refresh token for user: {}", user.getUsername());
     }
 
     // O(1)-time

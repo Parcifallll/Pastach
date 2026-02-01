@@ -24,8 +24,8 @@ public class RecommendationGrpcClient {
     private final RecommendationServiceGrpc.RecommendationServiceBlockingStub blockingStub;
 
     public RecommendationGrpcClient(
-            @Value("${grpc.host:localhost}") String host,
-            @Value("${grpc.port:50051}") int port) {
+            @Value("${grpc.host}") String host,
+            @Value("${grpc.port}") int port) {
         this.channel = ManagedChannelBuilder.forAddress(host, port)
                 .usePlaintext()
                 .build();
