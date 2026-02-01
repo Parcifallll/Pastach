@@ -1,0 +1,186 @@
+services:
+  backend-app:
+    container_name: backend-app
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:${BACKEND_PORT}"
+    depends_on:
+      backend-postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      backend-redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  backend-postgres:
+    container_name: backend-postgres
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${BACKEND_POSTGRES_DB}
+      POSTGRES_USER: ${BACKEND_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${BACKEND_POSTGRES_PASSWORD}
+    ports:
+      - "5433:${BACKEND_POSTGRES_PORT}"
+    volumes:
+      - backend_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -h localhost -U ${BACKEND_POSTGRES_USER} -d ${BACKEND_POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  backend-redis:
+    container_name: backend-redis
+    image: redis:7-alpine
+    command: redis-server --requirepass ${BACKEND_REDIS_PASSWORD}
+    ports:
+      - "6379:${BACKEND_REDIS_PORT}"
+    volumes:
+      - backend_redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "-a", "${BACKEND_REDIS_PASSWORD}", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  recsys-app:
+    container_name: recsys-app
+    build:
+      context: ./recommendation-system
+      dockerfile: Dockerfile
+      target: app
+    ports:
+      - "8000:${RECSYS_PORT}"
+    depends_on:
+      recsys-grpc-server:
+        condition: service_started
+      recsys-postgres:
+        condition: service_healthy
+      recsys-redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  recsys-grpc-server:
+    container_name: recsys-grpc-server
+    build:
+      context: ./recommendation-system
+      dockerfile: Dockerfile
+      target: grpc-server
+    ports:
+      - "${RECSYS_GRPC_PORT}:${RECSYS_GRPC_PORT}"
+    depends_on:
+      recsys-postgres:
+        condition: service_healthy
+      recsys-redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  recsys-postgres:
+    container_name: recsys-postgres
+    image: pgvector/pgvector:pg15
+    environment:
+      POSTGRES_USER: ${RECSYS_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${RECSYS_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${RECSYS_POSTGRES_DB}
+    ports:
+      - "5434:${RECSYS_POSTGRES_PORT}"
+    volumes:
+      - recsys_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -h localhost -U ${RECSYS_POSTGRES_USER} -d ${RECSYS_POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  recsys-redis:
+    container_name: recsys-redis
+    image: redis:7-alpine
+    command: redis-server --requirepass ${RECSYS_REDIS_PASSWORD}
+    ports:
+      - "6380:${RECSYS_REDIS_PORT}"
+    volumes:
+      - recsys_redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "-a", "${RECSYS_REDIS_PASSWORD}", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_LOG4J_ROOT_LOGLEVEL: OFF
+      ZOOKEEPER_LOG4J_LOGGERS: "org.apache.zookeeper=OFF,org.apache.kafka=OFF"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_secrets:/etc/zookeeper/secrets
+      - zookeeper_logs:/var/lib/zookeeper/log
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "2181" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: none
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      # Listeners
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+
+      # Replication (1 broker)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      # Retention (7 days storage)
+      KAFKA_LOG_RETENTION_HOURS: 168
+
+      # Auto create topics
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+      - kafka_secrets:/etc/kafka/secrets
+    healthcheck:
+      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092" ]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  backend_postgres_data:
+  backend_redis_data:
+  zookeeper_data:
+  zookeeper_logs:
+  zookeeper_secrets:
+  kafka_data:
+  kafka_secrets:
+
+  recsys_postgres_data:
+  recsys_redis_data:
