@@ -1,0 +1,6 @@
+.idea/
+.env*
+tests/
+.git
+images/
+README.md
