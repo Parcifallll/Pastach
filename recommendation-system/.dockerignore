@@ -7,3 +7,4 @@ tests/
 images/
 README.md
 .idea/
+Makefile

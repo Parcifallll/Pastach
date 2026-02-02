@@ -1,4 +1,4 @@
-## Pastach - Java social network with a Python recommendation microservice
+## Pastach is a social network website with a Python recommendation microservice
 ![img.png](images/img.png)
 
 ![img_1.png](images/img_1.png)
