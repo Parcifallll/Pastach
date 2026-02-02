@@ -10,6 +10,7 @@ import com.example.Pastach.service.PostService;
 import com.example.Pastach.service.ReactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -22,12 +23,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 
 @RestController
 @RequestMapping("/posts")
 @RequiredArgsConstructor
+@Slf4j
 public class PostController {
 
     private final PostService postService;
@@ -149,12 +153,15 @@ public class PostController {
     }
 
     @GetMapping("/recommendations")
-    public ResponseEntity<List<PostResponseDTO>> getRecommendedPosts(
+    public CompletableFuture<ResponseEntity<List<PostResponseDTO>>> getRecommendedPosts(
             @RequestParam(defaultValue = "10") int limit, @AuthenticationPrincipal User currentUser) {
 
         Long userId = currentUser.getId();
-        List<PostResponseDTO> recommendations = postService.getRecommendedPosts(userId, limit);
-
-        return ResponseEntity.ok(recommendations);
+        return postService.getRecommendedPosts(userId, limit)
+                .thenApply(ResponseEntity::ok)// when ready - run task
+                .exceptionally(e -> {
+                    log.error("Controller error: ", e);
+                    return ResponseEntity.ok(Collections.emptyList());  // Fallback
+                });
     }
 }

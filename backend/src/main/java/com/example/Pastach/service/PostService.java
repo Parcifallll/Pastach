@@ -18,13 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -129,23 +133,34 @@ public class PostService {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @Async("taskExecutor")  // tasks pool from config
     @Transactional(readOnly = true)
-    public List<PostResponseDTO> getRecommendedPosts(Long userId, int limit) {
+    public CompletableFuture<List<PostResponseDTO>> getRecommendedPosts(Long userId, int limit) {
         log.info("Request for recommendations for userId={}, limit={}", userId, limit);
 
-        List<Long> recommendedIds = recommendationGrpcClient.getRecommendedPostIds(userId, limit, true);
-        if (recommendedIds.isEmpty()) {
-            log.warn("Recommendations were not received — fallback to recent posts");
-            Pageable pageable = PageRequest.of(0, limit); // page=0, size=limit
-            List<Post> recentPosts = postRepository.findTopNByOrderByCreatedAtDesc(pageable)
-                    .getContent();
-            return recentPosts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
-        }
+        CompletableFuture<List<Long>> idsFuture = recommendationGrpcClient.getRecommendedPostIdsAsync(userId, limit, true);
 
-        Long[] idsArray = recommendedIds.toArray(new Long[0]);
-        List<Post> posts = postRepository.findAllByIdInOrderByField(idsArray);
-
-        return posts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
+        return idsFuture.thenCompose(recommendedIds -> {
+                    if (recommendedIds.isEmpty()) {
+                        log.warn("Recommendations were not received, fallback to recent posts");
+                        return CompletableFuture.supplyAsync(() -> {
+                            Pageable pageable = PageRequest.of(0, limit);
+                            List<Post> recentPosts = postRepository.findTopNByOrderByCreatedAtDesc(pageable).getContent();
+                            return recentPosts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
+                        });
+                    } else {
+                        Long[] idsArray = recommendedIds.toArray(new Long[0]);
+                        return CompletableFuture.supplyAsync(() -> {
+                            List<Post> posts = postRepository.findAllByIdInOrderByField(idsArray);
+                            return posts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
+                        });
+                    }
+                })
+                .orTimeout(30, TimeUnit.SECONDS) // if CompletableFuture<> did not receive from DB posts
+                .exceptionally(e -> {
+                    log.error("Error in getRecommendedPosts: {}", e.getMessage(), e);
+                    return Collections.emptyList();  // fallback to error
+                });
     }
 
 }

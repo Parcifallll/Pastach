@@ -9,7 +9,7 @@ BLUE := \033[0;34m
 NC := \033[0m
 
 .PHONY: help dev infra infra-up infra-down run logs \
-        status ps db-connect alembic-upgrade alembic-downgrade
+        status ps db-connect alembic-upgrade alembic-downgrade venv requirements
 
 help:
 	@echo "$(GREEN)Available commands:$(NC)"
@@ -80,3 +80,9 @@ proto:
 		--python_out=app/grpc/proto \
 		--grpc_python_out=app/grpc/proto \
 		app/grpc/proto/recposts.proto
+
+venv:
+	python -m venv venv
+
+requirements:
+	pip install -r requirements.txt
