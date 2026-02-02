@@ -127,7 +127,6 @@ htmlcov/
 
 # Model cache
 .cache/
-models/
 
 # Jupyter
 .ipynb_checkpoints/
