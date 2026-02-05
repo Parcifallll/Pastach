@@ -7,6 +7,7 @@ import com.example.Pastach.model.User;
 import com.example.Pastach.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,6 +17,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponseDTO> getCurrent(@AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(userService.getById(currentUser.getId()));
     }
@@ -38,7 +41,7 @@ public class UserController {
 
     @GetMapping
     public PagedModel<UserResponseDTO> getAll(
-            @PageableDefault(size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 15, sort = "createdAt", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable) {
 
         Page<UserResponseDTO> page = userService.getAll(pageable);
 
