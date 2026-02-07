@@ -14,9 +14,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -81,6 +83,7 @@ public class CommentController {
     }
 
     @GetMapping
+    @SecurityRequirements({})
     @Operation(
             summary = "Get all comments for a post",
             description = "Returns a paginated list of all comments for a specific post, sorted by creation date (newest first)"
@@ -101,7 +104,7 @@ public class CommentController {
     public PagedModel<CommentResponseDTO> getAllByPostId(
             @PathVariable Long postId,
             @Parameter(description = "Pagination parameters: page number, size, sort")
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)  @ParameterObject Pageable pageable) {
 
         Page<CommentResponseDTO> page = commentService.getAllByPostId(postId, pageable);
 

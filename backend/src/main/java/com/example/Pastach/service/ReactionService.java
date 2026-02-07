@@ -37,8 +37,13 @@ public class ReactionService {
             postRepository.findById(targetId)
                     .orElseThrow(() -> new PostNotFoundException(targetId));
         } else {
-            commentRepository.findById(targetId)
+            Comment comment = commentRepository.findById(targetId)
                     .orElseThrow(() -> new CommentNotFoundException(targetId));
+
+            // Prevent reacting to deleted comments
+            if (comment.isDeleted()) {
+                throw new IllegalArgumentException("Cannot react to deleted comment");
+            }
         }
 
         Optional<Reaction> existing = reactionRepository
