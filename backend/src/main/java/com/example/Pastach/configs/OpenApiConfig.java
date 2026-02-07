@@ -43,8 +43,7 @@ import org.springframework.context.annotation.Configuration;
 )
 @SecurityScheme(
         name = "bearerAuth",
-        description = "JWT authentication token. Obtain it from /auth/login or /auth/signup endpoints. " +
-                "Use format: Bearer {token}",
+        description = "JWT token. Get it from Authentication controller: /auth/login or /auth/signup endpoints. ",
         scheme = "bearer",
         type = SecuritySchemeType.HTTP,
         bearerFormat = "JWT",

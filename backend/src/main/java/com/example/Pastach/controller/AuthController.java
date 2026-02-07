@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -34,6 +36,7 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/signup")
+    @SecurityRequirements({})
     @Operation(
             summary = "Register a new user",
             description = "Creates a new user account and returns JWT tokens for authentication"
@@ -66,6 +69,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @SecurityRequirements({})
     @Operation(
             summary = "User login",
             description = "Authenticates user and returns JWT tokens"
@@ -96,7 +100,9 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(dto, deviceInfo, ipAddress));
     }
 
+
     @PostMapping("/refresh")
+    @SecurityRequirements({})
     @Operation(
             summary = "Refresh access token",
             description = "Issues a new access token using a valid refresh token"

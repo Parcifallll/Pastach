@@ -8,6 +8,7 @@ import com.example.Pastach.repository.UserRepository;
 import com.example.Pastach.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -101,6 +102,7 @@ public class AuthService {
     }
 
     // takes O(1)-time
+    @PreAuthorize("isAuthenticated()")
     @Transactional
     public void logout(String refreshToken) {
         refreshTokenService.deleteRefreshToken(refreshToken);
@@ -108,11 +110,14 @@ public class AuthService {
     }
 
     // takes O(n)-time
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
     public void logoutAll(User currentUser) {
         refreshTokenService.logoutAll(currentUser.getId());
         log.info("User {} logged out from all devices", currentUser.getUsername());
     }
 
+    @PreAuthorize("isAuthenticated()")
     public Long getActiveSessionsCount(User currentUser) {
         return refreshTokenService.getActiveSessionsCount(currentUser.getId());
     }

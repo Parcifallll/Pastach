@@ -43,9 +43,15 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/docs/**").permitAll()
+                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/auth/signup").permitAll()
+                        .requestMatchers("/auth/refresh").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/auth/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/auth/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/auth/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/posts/recommendations").authenticated()
                         .requestMatchers(HttpMethod.POST, "/posts/**").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/posts/**").authenticated()

@@ -14,10 +14,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -83,6 +85,7 @@ public class PostController {
     }
 
     @GetMapping
+    @SecurityRequirements({})
     @Operation(
             summary = "Get all posts",
             description = "Returns a paginated list of all posts sorted by creation date (newest first)"
@@ -96,7 +99,7 @@ public class PostController {
     })
     public PagedModel<PostResponseDTO> getAllPosts(
             @Parameter(description = "Pagination parameters: page number, size, sort")
-            @PageableDefault(size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 15, sort = "createdAt", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable) {
 
         Page<PostResponseDTO> page = postService.getAll(pageable);
 
@@ -133,6 +136,7 @@ public class PostController {
     }
 
     @GetMapping("/users/{authorId}/posts")
+    @SecurityRequirements({})
     @Operation(
             summary = "Get posts by author",
             description = "Returns a paginated list of posts created by a specific user"
@@ -190,6 +194,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
+    @SecurityRequirements({})
     @Operation(
             summary = "Get post by ID",
             description = "Returns a single post by its identifier"
