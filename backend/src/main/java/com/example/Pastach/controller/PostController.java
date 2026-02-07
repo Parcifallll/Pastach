@@ -8,6 +8,13 @@ import com.example.Pastach.model.ReactionTargetType;
 import com.example.Pastach.model.User;
 import com.example.Pastach.service.PostService;
 import com.example.Pastach.service.ReactionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +39,10 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/posts")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(
+        name = "Posts",
+        description = "Manage posts: create, read, update, delete posts and react to them"
+)
 public class PostController {
 
     private final PostService postService;
@@ -39,6 +50,32 @@ public class PostController {
 
 
     @PostMapping
+    @Operation(
+            summary = "Create a new post",
+            description = "Creates a new post with text and/or photo. At least one of them must be provided."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Post successfully created",
+                    content = @Content(schema = @Schema(implementation = PostResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Validation error or no content provided",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ValidationResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "User is locked and cannot create posts",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            )
+    })
     public ResponseEntity<PostResponseDTO> createPost(
             @Valid @RequestBody PostCreateDTO dto,
             @AuthenticationPrincipal User currentUser) {
@@ -46,7 +83,19 @@ public class PostController {
     }
 
     @GetMapping
+    @Operation(
+            summary = "Get all posts",
+            description = "Returns a paginated list of all posts sorted by creation date (newest first)"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Posts retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = PagedModel.class))
+            )
+    })
     public PagedModel<PostResponseDTO> getAllPosts(
+            @Parameter(description = "Pagination parameters: page number, size, sort")
             @PageableDefault(size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<PostResponseDTO> page = postService.getAll(pageable);
@@ -84,8 +133,26 @@ public class PostController {
     }
 
     @GetMapping("/users/{authorId}/posts")
+    @Operation(
+            summary = "Get posts by author",
+            description = "Returns a paginated list of posts created by a specific user"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Posts retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = PagedModel.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Author not found",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            )
+    })
+    @Parameter(name = "authorId", description = "Author's user ID", required = true, example = "1")
     public PagedModel<PostResponseDTO> getPostsByAuthorId(
             @PathVariable Long authorId,
+            @Parameter(description = "Pagination parameters: page number, size, sort")
             @PageableDefault(size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<PostResponseDTO> page = postService.getByAuthorId(authorId, pageable);
@@ -123,11 +190,60 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
+    @Operation(
+            summary = "Get post by ID",
+            description = "Returns a single post by its identifier"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Post found",
+                    content = @Content(schema = @Schema(implementation = PostResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Post not found",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            )
+    })
+    @Parameter(name = "id", description = "Post identifier", required = true, example = "1")
     public ResponseEntity<PostResponseDTO> getPostById(@PathVariable Long id) {
         return ResponseEntity.ok(postService.getById(id));
     }
 
     @PatchMapping("/{postId}")
+    @Operation(
+            summary = "Update a post",
+            description = "Updates post content (text and/or photo). Only the post author can update it."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Post successfully updated",
+                    content = @Content(schema = @Schema(implementation = PostResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Validation error or no content provided",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ValidationResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "User is not the author or is locked",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Post not found",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            )
+    })
+    @Parameter(name = "postId", description = "Post identifier to update", required = true, example = "1")
     public ResponseEntity<PostResponseDTO> updateById(
             @PathVariable Long postId,
             @Valid @RequestBody PostUpdateDTO dto,
@@ -136,6 +252,32 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}")
+    @Operation(
+            summary = "Delete a post",
+            description = "Permanently deletes a post. Only the post author or admin can delete it."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Post successfully deleted"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "User is not the author or admin",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Post not found",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            )
+    })
+    @Parameter(name = "postId", description = "Post identifier to delete", required = true, example = "1")
     public ResponseEntity<Void> deleteById(
             @PathVariable Long postId,
             @AuthenticationPrincipal User currentUser) {
@@ -144,6 +286,32 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/reactions")
+    @Operation(
+            summary = "React to a post",
+            description = "Add or remove a reaction (like/dislike) to a post. If the same reaction already exists, it will be removed (toggle behavior)."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Reaction toggled successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid reaction type",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ValidationResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Post not found",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            )
+    })
+    @Parameter(name = "postId", description = "Post identifier to react to", required = true, example = "1")
     public ResponseEntity<Void> reactToPost(
             @PathVariable Long postId,
             @RequestBody ReactionCreateDTO dto,
@@ -153,12 +321,30 @@ public class PostController {
     }
 
     @GetMapping("/recommendations")
+    @Operation(
+            summary = "Get recommended posts",
+            description = "Returns personalized post recommendations for the current user based on their activity. Recommendations are created in Python microservice"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Recommendations retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = PostResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorHandler.ErrorResponse.class))
+            )
+    })
+    @Parameter(name = "limit", description = "Max number of recommendations to return", example = "10")
     public CompletableFuture<ResponseEntity<List<PostResponseDTO>>> getRecommendedPosts(
-            @RequestParam(defaultValue = "10") int limit, @AuthenticationPrincipal User currentUser) {
+            @RequestParam(defaultValue = "10") int limit,
+            @AuthenticationPrincipal User currentUser) {
 
         Long userId = currentUser.getId();
         return postService.getRecommendedPosts(userId, limit)
-                .thenApply(ResponseEntity::ok)// when ready - run task
+                .thenApply(ResponseEntity::ok)  // when ready - run task
                 .exceptionally(e -> {
                     log.error("Controller error: ", e);
                     return ResponseEntity.ok(Collections.emptyList());  // Fallback

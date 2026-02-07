@@ -15,11 +15,10 @@ public class Role {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "name", nullable = false, unique = true, length = 50)
     private RoleEnum name; // USER, ADMIN
 
     public Role(RoleEnum name) {
         this.name = name;
     }
-
 }

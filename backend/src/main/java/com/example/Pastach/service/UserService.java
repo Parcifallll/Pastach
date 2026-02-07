@@ -12,6 +12,7 @@ import com.example.Pastach.model.RoleEnum;
 import com.example.Pastach.model.User;
 import com.example.Pastach.repository.RoleRepository;
 import com.example.Pastach.repository.UserRepository;
+import com.example.Pastach.security.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public User createWithPassword(String username, String email, String firstName,
@@ -134,6 +136,7 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(dto.newPassword()));
         userRepository.save(user);
+        refreshTokenService.logoutAll(userId);
     }
 
     // admin only
