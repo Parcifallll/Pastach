@@ -13,7 +13,11 @@ import java.util.List;
 @Setter
 @AllArgsConstructor(access = AccessLevel.PACKAGE) // for JPA
 @Entity
-@Table(name = "posts", schema = "public")
+@Table(name = "posts", schema = "public",
+        indexes = {
+                @Index(name = "idx_posts_author_id", columnList = "author_id"),
+                @Index(name = "idx_posts_created_at", columnList = "created_at DESC")
+        })
 @NoArgsConstructor // for JPA
 public class Post {
 
@@ -26,7 +30,7 @@ public class Post {
     @Column(name = "author_id", nullable = false)
     private Long authorId;
 
-    @Column(name = "text")
+    @Column(name = "text", columnDefinition = "TEXT")
     private String text;
 
     @Column(name = "photo_url")
@@ -49,7 +53,6 @@ public class Post {
 
     @Column(name = "dislikes_count", nullable = false, columnDefinition = "bigint default 0")
     private long dislikesCount = 0;
-
 
     // for PostService and PostMapper
     public Post(String text, String photoUrl, Long authorId) {
