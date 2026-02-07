@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @SecurityRequirements({})
     @Operation(
             summary = "Get user by ID",
             description = "Returns the profile information of a user by their ID"
@@ -83,6 +85,7 @@ public class UserController {
     }
 
     @GetMapping
+    @SecurityRequirements({})
     @Operation(
             summary = "Get all users",
             description = "Returns a paginated list of all users sorted by creation date (newest first)"

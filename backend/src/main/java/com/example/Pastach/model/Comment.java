@@ -12,7 +12,8 @@ import java.time.Instant;
         indexes = {
                 @Index(name = "idx_comments_post_id", columnList = "post_id"),
                 @Index(name = "idx_comments_author_id", columnList = "author_id"),
-                @Index(name = "idx_comments_post_created", columnList = "post_id, created_at DESC")
+                @Index(name = "idx_comments_post_created", columnList = "post_id, created_at DESC"),
+                @Index(name = "idx_comments_parent_id", columnList = "parent_comment_id"),
         })
 @Getter
 @Setter
@@ -24,7 +25,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "author_id", nullable = false)
+    @Column(name = "author_id")  // can be nullable for deleted comments
     private Long authorId;
 
     @CreationTimestamp
@@ -43,8 +44,18 @@ public class Comment {
     @Column(name = "dislikes_count", nullable = false, columnDefinition = "bigint default 0")
     private long dislikesCount = 0;
 
+    @Column(name = "parent_comment_id")
+    private Long parentCommentId;  // null for root comments (replies to post)
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;  // null - active, non-null - soft deleted
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
 }

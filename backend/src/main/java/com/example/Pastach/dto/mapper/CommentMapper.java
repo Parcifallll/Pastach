@@ -16,14 +16,22 @@ public interface CommentMapper {
     @Mapping(target = "post", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "authorId", ignore = true)
+    @Mapping(target = "likesCount", ignore = true)
+    @Mapping(target = "dislikesCount", ignore = true)
+    @Mapping(target = "deletedAt", ignore = true)
     Comment toEntity(CommentCreateDTO commentCreateDTO);
 
     @Mapping(target = "postId", source = "post.id")
+    @Mapping(target = "deletedAt", source = "deletedAt")
     CommentResponseDTO toResponseDto(Comment comment);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "post", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "authorId", ignore = true)
+    @Mapping(target = "likesCount", ignore = true)
+    @Mapping(target = "dislikesCount", ignore = true)
+    @Mapping(target = "parentCommentId", ignore = true)
+    @Mapping(target = "deletedAt", ignore = true)
     void updateFromDto(CommentUpdateDTO commentUpdateDTO, @MappingTarget Comment comment);
 }

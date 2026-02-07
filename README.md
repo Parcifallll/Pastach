@@ -9,21 +9,24 @@ Pastach - RESTful социальная сеть с новостной ленто
 * Работа с данными: Spring Sata JPA, Hibernate, Flyway, Postgres, Redis
 * Безопасность: Spring Security, JWT
 * Тестирование: JUnit, Mockito, Testcontainers, WebMvcTest
-* Прочее: websockets, gRPC; docker-compose
+* Прочее: Apache Kafka; Websockets, gRPC; docker-compose
 
-### Интерактивная документация: http://localhost:8080/docs/swagger-ui/index.html
-### Miro-доска проекта: https://miro.com/app/board/uXjVJxKXx9g=/?share_link_id=797244928745
+### Интерактивная документация:
+http://localhost:8080/docs/swagger-ui/index.html
 
-![img.png](img.png)
+### Miro-доска проекта:
+https://miro.com/app/board/uXjVJxKXx9g=/?share_link_id=797244928745
 
-![img_1.png](img_1.png)
+![img.png](images/img.png)
 
-![img_2.png](img_2.png)
+![img_1.png](images/img_1.png)
 
-![img_3.png](img_3.png)
+![img_2.png](images/img_2.png)
 
-![img_4.png](img_4.png)
+![img_3.png](images/img_3.png)
 
-![img_5.png](img_5.png)
+![img_4.png](images/img_4.png)
 
-![img_6.png](img_6.png)
+![img_5.png](images/img_5.png)
+
+![img_6.png](images/img_6.png)

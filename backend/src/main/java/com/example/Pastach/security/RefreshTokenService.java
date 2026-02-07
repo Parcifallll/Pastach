@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -80,6 +82,8 @@ public class RefreshTokenService {
     }
 
     // logout from one device
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
     public void deleteRefreshToken(String token) {
         String tokenHash = hashToken(token);
         String tokenKey = REFRESH_TOKEN_PREFIX + tokenHash;
@@ -99,6 +103,8 @@ public class RefreshTokenService {
     }
 
     // logout from all sessions, takes O(n)-time
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
     public void logoutAll(Long userId) {
         String userTokensKey = USER_TOKENS_PREFIX + userId;
         Set<Object> tokens = redisTemplate.opsForSet().members(userTokensKey);
@@ -116,6 +122,8 @@ public class RefreshTokenService {
     }
 
     // O(n)
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
     public List<SessionInfo> getActiveSessions(Long userId) {
         String userTokensKey = USER_TOKENS_PREFIX + userId;
         Set<Object> tokenHashes = redisTemplate.opsForSet().members(userTokensKey);
@@ -145,6 +153,8 @@ public class RefreshTokenService {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
     public void revokeSession(Long userId, String tokenHash) {
         String tokenKey = REFRESH_TOKEN_PREFIX + tokenHash;
 
@@ -156,6 +166,8 @@ public class RefreshTokenService {
         log.debug("Revoked session {} for user {}", tokenHash, userId);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
     public Long getActiveSessionsCount(Long userId) {
         String userTokensKey = USER_TOKENS_PREFIX + userId;
         return redisTemplate.opsForSet().size(userTokensKey);
