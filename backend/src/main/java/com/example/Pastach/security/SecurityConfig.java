@@ -52,7 +52,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/**").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/auth/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/auth/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/posts/recommendations").authenticated()
                         .requestMatchers(HttpMethod.POST, "/posts/**").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/posts/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/posts/**").authenticated()
@@ -62,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/users/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/posts/recommendations").authenticated()
                         .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
 
                         // ADMIN
