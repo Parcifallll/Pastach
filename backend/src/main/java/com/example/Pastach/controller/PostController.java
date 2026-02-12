@@ -29,6 +29,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -343,16 +344,24 @@ public class PostController {
             )
     })
     @Parameter(name = "limit", description = "Max number of recommendations to return", example = "10")
-    public CompletableFuture<ResponseEntity<List<PostResponseDTO>>> getRecommendedPosts(
-            @RequestParam(defaultValue = "10") int limit,
-            @AuthenticationPrincipal User currentUser) {
+    @Parameter(name = "offset", description = "Offset for pagination", example = "0")
+    @PreAuthorize("isAuthenticated()")
+    public CompletableFuture<ResponseEntity<PagedModel<PostResponseDTO>>> getRecommendedPosts(  // PagedModel (HATEOAS)
+                                                                                                @RequestParam(defaultValue = "10") int limit,
+                                                                                                @RequestParam(defaultValue = "0") int offset,
+                                                                                                @AuthenticationPrincipal User currentUser) {
 
         Long userId = currentUser.getId();
-        return postService.getRecommendedPosts(userId, limit)
-                .thenApply(ResponseEntity::ok)  // when ready - run task
+        return postService.getRecommendedPosts(userId, limit, offset)
+                .thenApply(posts -> {
+                    PagedModel<PostResponseDTO> pagedModel = PagedModel.of(posts, new PagedModel.PageMetadata(limit, offset / limit, posts.size() + offset));  // metadata
+                    pagedModel.add(Link.of("/posts/recommendations?limit=" + limit + "&offset=" + (offset + limit)).withRel("next"));  // next link
+                    pagedModel.add(Link.of("/posts/recommendations?limit=" + limit + "&offset=" + offset).withSelfRel());  // self
+                    return ResponseEntity.ok(pagedModel);
+                })
                 .exceptionally(e -> {
                     log.error("Controller error: ", e);
-                    return ResponseEntity.ok(Collections.emptyList());  // Fallback
+                    return ResponseEntity.ok(PagedModel.empty());  // Fallback empty with HATEOAS
                 });
     }
 }

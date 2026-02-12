@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0erecposts.proto\x12\x08recposts\"Y\n\x19GetRecommendationsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x1c\n\x14\x65xclude_author_posts\x18\x03 \x01(\x08\"<\n\x0fRecommendedPost\x12\x0f\n\x07post_id\x18\x01 \x01(\x03\x12\x18\n\x10similarity_score\x18\x02 \x01(\x01\"v\n\x1aGetRecommendationsResponse\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x32\n\x0frecommendations\x18\x02 \x03(\x0b\x32\x19.recposts.RecommendedPost\x12\x13\n\x0btotal_count\x18\x03 \x01(\x05\x32z\n\x15RecommendationService\x12\x61\n\x12GetRecommendations\x12#.recposts.GetRecommendationsRequest\x1a$.recposts.GetRecommendationsResponse\"\x00\x42+\n\x18\x63om.example.Pastach.grpcB\rRecPostsProtoP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0erecposts.proto\x12\x08recposts\"i\n\x19GetRecommendationsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x0e\n\x06offset\x18\x03 \x01(\x05\x12\x1c\n\x14\x65xclude_author_posts\x18\x04 \x01(\x08\"<\n\x0fRecommendedPost\x12\x0f\n\x07post_id\x18\x01 \x01(\x03\x12\x18\n\x10similarity_score\x18\x02 \x01(\x01\"v\n\x1aGetRecommendationsResponse\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x32\n\x0frecommendations\x18\x02 \x03(\x0b\x32\x19.recposts.RecommendedPost\x12\x13\n\x0btotal_count\x18\x03 \x01(\x05\x32z\n\x15RecommendationService\x12\x61\n\x12GetRecommendations\x12#.recposts.GetRecommendationsRequest\x1a$.recposts.GetRecommendationsResponse\"\x00\x42+\n\x18\x63om.example.Pastach.grpcB\rRecPostsProtoP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -23,11 +23,11 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n\030com.example.Pastach.grpcB\rRecPostsProtoP\001'
   _globals['_GETRECOMMENDATIONSREQUEST']._serialized_start=28
-  _globals['_GETRECOMMENDATIONSREQUEST']._serialized_end=117
-  _globals['_RECOMMENDEDPOST']._serialized_start=119
-  _globals['_RECOMMENDEDPOST']._serialized_end=179
-  _globals['_GETRECOMMENDATIONSRESPONSE']._serialized_start=181
-  _globals['_GETRECOMMENDATIONSRESPONSE']._serialized_end=299
-  _globals['_RECOMMENDATIONSERVICE']._serialized_start=301
-  _globals['_RECOMMENDATIONSERVICE']._serialized_end=423
+  _globals['_GETRECOMMENDATIONSREQUEST']._serialized_end=133
+  _globals['_RECOMMENDEDPOST']._serialized_start=135
+  _globals['_RECOMMENDEDPOST']._serialized_end=195
+  _globals['_GETRECOMMENDATIONSRESPONSE']._serialized_start=197
+  _globals['_GETRECOMMENDATIONSRESPONSE']._serialized_end=315
+  _globals['_RECOMMENDATIONSERVICE']._serialized_start=317
+  _globals['_RECOMMENDATIONSERVICE']._serialized_end=439
 # @@protoc_insertion_point(module_scope)

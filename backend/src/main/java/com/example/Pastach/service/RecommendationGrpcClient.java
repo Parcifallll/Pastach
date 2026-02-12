@@ -34,16 +34,17 @@ public class RecommendationGrpcClient {
         log.info("gRPC client is connected to {}:{}", host, port);
     }
 
-    public CompletableFuture<List<Long>> getRecommendedPostIdsAsync(Long userId, int limit, boolean excludeAuthorPosts) {
+    public CompletableFuture<List<Long>> getRecommendedPostIdsAsync(Long userId, int limit, int offset, boolean excludeAuthorPosts) {  // added offset
+        CompletableFuture<GetRecommendationsResponse> responseFuture = new CompletableFuture<>();
+
         GetRecommendationsRequest request = GetRecommendationsRequest.newBuilder()
                 .setUserId(userId)
                 .setLimit(limit)
+                .setOffset(offset)
                 .setExcludeAuthorPosts(excludeAuthorPosts)
                 .build();
 
-        CompletableFuture<GetRecommendationsResponse> responseFuture = new CompletableFuture<>();
-
-        asyncStub.withDeadlineAfter(10, TimeUnit.SECONDS) // dd=server response
+        asyncStub.withDeadlineAfter(10, TimeUnit.SECONDS) // server response
                 .getRecommendations(request, new io.grpc.stub.StreamObserver<>() {
                     @Override
                     public void onNext(GetRecommendationsResponse response) {

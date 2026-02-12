@@ -43,6 +43,7 @@ class RecommendationService:
             user_id=request.user_id,
             session=session,
             limit=request.limit,
+            offset=request.offset,
             exclude_author_posts=request.exclude_author_posts,
             redis_client=self.redis_client
         )

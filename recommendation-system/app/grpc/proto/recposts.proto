@@ -9,7 +9,8 @@ option java_outer_classname = "RecPostsProto";
 message GetRecommendationsRequest {
   int64 user_id = 1;
   int32 limit = 2;
-  bool exclude_author_posts = 3;
+  int32 offset = 3;
+  bool exclude_author_posts = 4;
 }
 
 message RecommendedPost {

@@ -135,16 +135,16 @@ public class PostService {
     @PreAuthorize("isAuthenticated()")
     @Async("taskExecutor")  // tasks pool from config
     @Transactional(readOnly = true)
-    public CompletableFuture<List<PostResponseDTO>> getRecommendedPosts(Long userId, int limit) {
+    public CompletableFuture<List<PostResponseDTO>> getRecommendedPosts(Long userId, int limit, int offset) {
         log.info("Request for recommendations for userId={}, limit={}", userId, limit);
 
-        CompletableFuture<List<Long>> idsFuture = recommendationGrpcClient.getRecommendedPostIdsAsync(userId, limit, true);
+        CompletableFuture<List<Long>> idsFuture = recommendationGrpcClient.getRecommendedPostIdsAsync(userId, limit, offset, true);
 
         return idsFuture.thenCompose(recommendedIds -> {
                     if (recommendedIds.isEmpty()) {
                         log.warn("Recommendations were not received, fallback to recent posts");
                         return CompletableFuture.supplyAsync(() -> {
-                            Pageable pageable = PageRequest.of(0, limit);
+                            Pageable pageable = PageRequest.of(offset / limit, limit);
                             List<Post> recentPosts = postRepository.findTopNByOrderByCreatedAtDesc(pageable).getContent();
                             return recentPosts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
                         });
@@ -156,7 +156,7 @@ public class PostService {
                         });
                     }
                 })
-                .orTimeout(30, TimeUnit.SECONDS) // if CompletableFuture<> did not receive from DB posts
+                .orTimeout(30, TimeUnit.SECONDS) // if CompletableFuture<> did not receive posts from DB
                 .exceptionally(e -> {
                     log.error("Error in getRecommendedPosts: {}", e.getMessage(), e);
                     return Collections.emptyList();  // fallback to error

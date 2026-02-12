@@ -12,13 +12,14 @@ from config import settings
 
 class RecommendationServiceServicer(recposts_pb2_grpc.RecommendationServiceServicer):
     async def GetRecommendations(self, request, context):
-        logger.info(f"gRPC request: user_id={request.user_id}, limit={request.limit}, exclude={request.exclude_author_posts}")
+        logger.info(f"gRPC request: user_id={request.user_id}, limit={request.limit}, offset={request.offset}, exclude={request.exclude_author_posts}")
 
         try:
             async with async_session_factory() as session:
                 posts_with_scores = await recommender.get_recommendations(
                     user_id=request.user_id,
                     limit=request.limit,
+                    offset=request.offset,
                     exclude_author_posts=request.exclude_author_posts,
                     session=session
                 )
