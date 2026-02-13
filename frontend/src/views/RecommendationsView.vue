@@ -2,58 +2,45 @@
   <div class="min-h-screen" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
     <!-- Header -->
     <header class="bg-white/15 backdrop-blur-lg border-b border-white/20 sticky top-0 z-50">
-      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-        <h1 class="text-2xl font-bold text-white">Лента</h1>
-        <div class="flex items-center space-x-4">
-          <button
-              @click="$router.push('/recommendations')"
-              class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition flex items-center space-x-2 border border-white/30"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-            </svg>
-            <span>Для вас</span>
-          </button>
-          <span class="text-white">{{ authStore.user?.username }}</span>
-          <button
-              @click="handleLogout"
-              class="px-4 py-2 bg-red-500/80 hover:bg-red-600/80 text-white rounded-lg transition"
-          >
-            Выйти
-          </button>
+      <div class="max-w-6xl mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <button
+                @click="$router.back()"
+                class="p-2 text-white hover:text-white/80 transition"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+            </button>
+            <h1 class="text-2xl font-bold text-white">Рекомендации для вас</h1>
+          </div>
+          <div class="flex items-center space-x-4">
+            <span class="text-white">{{ authStore.user?.username }}</span>
+            <button
+                @click="handleLogout"
+                class="px-4 py-2 bg-red-500/80 hover:bg-red-600/80 text-white rounded-lg transition"
+            >
+              Выйти
+            </button>
+          </div>
         </div>
       </div>
     </header>
 
     <!-- Main content -->
     <main class="max-w-4xl mx-auto px-4 py-8">
-      <!-- Create post form -->
-      <div class="bg-white/15 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-white/20 mb-8">
-        <h2 class="text-xl font-semibold text-white mb-4">Создать пост</h2>
-        <form @submit.prevent="handleCreatePost" class="space-y-4">
-          <textarea
-              v-model="newPost.text"
-              placeholder="Что у вас нового?"
-              rows="3"
-              class="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition resize-none"
-          ></textarea>
-
-          <div class="flex items-center space-x-4">
-            <input
-                v-model="newPost.photoUrl"
-                type="url"
-                placeholder="URL фото (опционально)"
-                class="flex-1 px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition"
-            />
-            <button
-                type="submit"
-                :disabled="isCreating || (!newPost.text?.trim() && !newPost.photoUrl?.trim())"
-                class="px-6 py-2 bg-white text-purple-600 hover:bg-white/90 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ isCreating ? 'Публикация...' : 'Опубликовать' }}
-            </button>
+      <!-- Info banner -->
+      <div class="bg-white/20 border border-white/30 text-white px-6 py-4 rounded-2xl mb-8 backdrop-blur-sm">
+        <div class="flex items-start space-x-3">
+          <svg class="w-6 h-6 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <h3 class="font-semibold mb-1">Персонализированная лента</h3>
+            <p class="text-sm text-white/90">Эти посты подобраны специально для вас на основе ваших интересов и активности</p>
           </div>
-        </form>
+        </div>
       </div>
 
       <!-- Error message -->
@@ -64,14 +51,14 @@
       <!-- Posts list -->
       <div class="space-y-6">
         <!-- Loading state -->
-        <div v-if="postsStore.loading && postsStore.posts.length === 0" class="text-center py-12">
+        <div v-if="postsStore.recommendationsLoading && (!postsStore.recommendedPosts || postsStore.recommendedPosts.length === 0)" class="text-center py-12">
           <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-          <p class="text-white mt-4">Загрузка постов...</p>
+          <p class="text-white mt-4">Подбираем рекомендации...</p>
         </div>
 
         <!-- Posts -->
         <div
-            v-for="post in postsStore.posts"
+            v-for="post in postsStore.recommendedPosts"
             :key="post.id"
             class="bg-white/15 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-white/20"
         >
@@ -87,7 +74,7 @@
               </div>
             </div>
 
-            <!-- Delete button for own posts -->
+            <!-- Delete button for own posts or admin -->
             <button
                 v-if="canDeletePost(post)"
                 @click="handleDeletePost(post.id)"
@@ -140,23 +127,39 @@
         </div>
 
         <!-- No posts message -->
-        <div v-if="!postsStore.loading && postsStore.posts.length === 0" class="text-center py-12">
-          <p class="text-white text-lg">Пока нет постов. Создайте первый!</p>
+        <div v-if="!postsStore.recommendationsLoading && (!postsStore.recommendedPosts || postsStore.recommendedPosts.length === 0)" class="text-center py-12">
+          <svg class="w-16 h-16 mx-auto text-white/70 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="text-white text-lg">Пока нет рекомендаций</p>
+          <p class="text-white/70 text-sm mt-2">Начните взаимодействовать с постами, чтобы получить персональные рекомендации</p>
+          <button
+              @click="$router.push('/feed')"
+              class="mt-4 px-6 py-2 bg-white text-purple-600 hover:bg-white/90 rounded-lg transition"
+          >
+            Перейти к основной ленте
+          </button>
         </div>
 
         <!-- Infinite scroll trigger -->
         <div
             ref="loadMoreTrigger"
-            v-if="postsStore.hasMore && postsStore.posts.length > 0"
+            v-if="postsStore.recommendationsHasMore && postsStore.recommendedPosts && postsStore.recommendedPosts.length > 0"
             class="text-center py-6"
         >
-          <div v-if="postsStore.loading" class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+          <div v-if="postsStore.recommendationsLoading" class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
         </div>
 
         <!-- End of feed message -->
-        <div v-if="!postsStore.hasMore && postsStore.posts.length > 0" class="text-center py-6">
-          <p class="text-white">Вы просмотрели все посты 🎉</p>
-          <p class="text-white/70 text-sm mt-2">Всего постов: {{ postsStore.totalElements }}</p>
+        <div v-if="!postsStore.recommendationsHasMore && postsStore.recommendedPosts && postsStore.recommendedPosts.length > 0" class="text-center py-6">
+          <p class="text-white">Вы просмотрели все рекомендации 🎉</p>
+          <p class="text-white/70 text-sm mt-2">Загружено постов: {{ postsStore.recommendedPosts.length }}</p>
+          <button
+              @click="refreshRecommendations"
+              class="mt-4 px-6 py-2 bg-white text-purple-600 hover:bg-white/90 rounded-lg transition"
+          >
+            Обновить рекомендации
+          </button>
         </div>
       </div>
     </main>
@@ -169,34 +172,31 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePostsStore } from '@/stores/posts'
 import { apiClient } from '@/api/axios'
-import type { CreatePostRequest, ReactionType } from '@/types/models'
+import type { ReactionType } from '@/types/models'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const postsStore = usePostsStore()
 
-// Create post form
-const newPost = ref<CreatePostRequest>({
-  text: '',
-  photoUrl: ''
-})
-
-const isCreating = ref(false)
 const errorMessage = ref<string | null>(null)
 
 // Infinite scroll observer
 const loadMoreTrigger = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 
-// Load posts on mount
+// Load recommendations on mount
 onMounted(async () => {
   try {
-    await postsStore.fetchPosts()
+    // Reset previous recommendations
+    postsStore.resetRecommendations()
+
+    // Load first batch
+    await postsStore.fetchRecommendations(0, 10)
 
     // Setup infinite scroll observer
     setupInfiniteScroll()
-  } catch (error) {
-    errorMessage.value = 'Не удалось загрузить посты'
+  } catch (error: any) {
+    errorMessage.value = error.response?.data?.message || 'Не удалось загрузить рекомендации'
   }
 })
 
@@ -218,7 +218,7 @@ const setupInfiniteScroll = () => {
     observer = new IntersectionObserver(
         (entries) => {
           const firstEntry = entries[0]
-          if (firstEntry.isIntersecting && postsStore.hasMore && !postsStore.loading) {
+          if (firstEntry.isIntersecting && postsStore.recommendationsHasMore && !postsStore.recommendationsLoading) {
             loadMore()
           }
         },
@@ -232,29 +232,13 @@ const setupInfiniteScroll = () => {
   }, 100)
 }
 
-// Create post handler
-const handleCreatePost = async () => {
-  isCreating.value = true
-  errorMessage.value = null
-
+// Refresh recommendations from beginning
+const refreshRecommendations = async () => {
   try {
-    // Clean up data
-    const postData: CreatePostRequest = {}
-    if (newPost.value.text?.trim()) {
-      postData.text = newPost.value.text
-    }
-    if (newPost.value.photoUrl?.trim()) {
-      postData.photoUrl = newPost.value.photoUrl
-    }
-
-    await postsStore.createPost(postData)
-
-    // Reset form
-    newPost.value = { text: '', photoUrl: '' }
+    postsStore.resetRecommendations()
+    await postsStore.fetchRecommendations(0, 10)
   } catch (error: any) {
-    errorMessage.value = error.response?.data?.message || 'Не удалось создать пост'
-  } finally {
-    isCreating.value = false
+    errorMessage.value = error.response?.data?.message || 'Не удалось обновить рекомендации'
   }
 }
 
@@ -273,18 +257,20 @@ const handleDeletePost = async (postId: number) => {
 const handleReaction = async (postId: number, type: ReactionType) => {
   try {
     await apiClient.put(`/posts/${postId}/reactions`, { type })
-    await postsStore.fetchPosts(postsStore.currentPage)
+    const currentOffset = postsStore.recommendationsOffset
+    const currentLimit = postsStore.recommendationsLimit
+    await postsStore.fetchRecommendations(0, currentOffset + currentLimit)
   } catch (error: any) {
     errorMessage.value = error.response?.data?.message || 'Не удалось поставить реакцию'
   }
 }
 
-// Load more posts
+// Load more recommendations
 const loadMore = async () => {
   try {
-    await postsStore.loadMorePosts()
-  } catch (error) {
-    errorMessage.value = 'Не удалось загрузить посты'
+    await postsStore.loadMoreRecommendations()
+  } catch (error: any) {
+    errorMessage.value = 'Не удалось загрузить рекомендации'
   }
 }
 

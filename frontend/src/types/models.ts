@@ -1,13 +1,13 @@
 // User model
 export interface User {
-    id: number;
-    username: string;
-    email?: string;
+    id: number; // Changed from string to number
+    username: string; // Main field for login
+    email?: string; // Optional field
     firstName: string;
     lastName: string;
-    birthday?: string; // ISO (LocalDate)
+    birthday?: string; // ISO date string (LocalDate)
     locked: boolean;
-    createdAt: string; // ISO datetime (Instant)
+    createdAt: string; // ISO datetime string (Instant)
     roles: Role[];
 }
 
@@ -23,18 +23,19 @@ export interface Post {
     authorId: number;
     text: string;
     photoUrl: string | null;
-    createdAt: string;
+    createdAt: string; // ISO datetime string (Instant)
     commentsCount: number;
     likesCount: number;
     dislikesCount: number;
 }
 
+// Comment model
 export interface Comment {
     id: number;
     authorId: number;
     text: string;
     photoUrl: string | null;
-    createdAt: string;
+    createdAt: string; // ISO datetime string (Instant)
     likesCount: number;
     dislikesCount: number;
     parentCommentId?: number | null;
@@ -47,15 +48,16 @@ export interface Reaction {
     targetId: number; // postId or commentId
     authorId: number;
     type: ReactionType;
-    createdAt: string;
+    createdAt: string; // ISO datetime string (Instant)
 }
 
 export type ReactionTargetType = 'POST' | 'COMMENT';
 
 export type ReactionType = 'LIKE' | 'DISLIKE';
 
+// Auth related types - matching backend JwtResponse
 export interface LoginRequest {
-    username: string;
+    username: string; // Login using username (not email!)
     password: string;
 }
 
@@ -68,6 +70,7 @@ export interface SignupRequest {
     birthday?: string; // ISO date format: "YYYY-MM-DD"
 }
 
+// Backend returns JwtResponse with these fields
 export interface AuthResponse {
     accessToken: string;
     refreshToken: string;
@@ -91,6 +94,26 @@ export interface ApiResponse<T> {
     data: T;
     message?: string;
     success: boolean;
+}
+
+// HATEOAS PagedModel response (Spring HATEOAS format)
+export interface PagedModel<T> {
+    _embedded?: {
+        postResponseDTOList?: T[];
+        userResponseDTOList?: T[];
+        commentResponseDTOList?: T[];
+    };
+    page?: {
+        size: number;
+        totalElements: number;
+        totalPages: number;
+        number: number; // current page number (0-based)
+    };
+    _links?: {
+        self?: { href: string };
+        next?: { href: string };
+        prev?: { href: string };
+    };
 }
 
 export interface PageResponse<T> {
@@ -142,6 +165,7 @@ export interface PasswordChangeRequest {
     newPassword: string;
 }
 
+// Response DTOs with additional data (if needed)
 export interface PostWithAuthor extends Post {
     author?: User;
 }
@@ -150,6 +174,7 @@ export interface CommentWithAuthor extends Comment {
     author?: User;
 }
 
+// Error response from backend
 export interface ErrorResponse {
     type: string;
     message: string;
@@ -165,6 +190,7 @@ export interface ValidationResponse {
     details: ValidationError[];
 }
 
+// Constants for enum values
 export const RoleEnumValues = {
     USER: 'USER' as const,
     ADMIN: 'ADMIN' as const,
