@@ -1,12 +1,13 @@
 // User model
 export interface User {
-    id: string; // UUID string
-    email: string;
+    id: number;
+    username: string;
+    email?: string;
     firstName: string;
     lastName: string;
-    birthday: string; // ISO date string (LocalDate)
+    birthday?: string; // ISO (LocalDate)
     locked: boolean;
-    createdAt: string; // ISO datetime string (Instant)
+    createdAt: string; // ISO datetime (Instant)
     roles: Role[];
 }
 
@@ -19,58 +20,70 @@ export type RoleEnum = 'USER' | 'ADMIN' | 'GUEST';
 
 export interface Post {
     id: number;
-    authorId: string;
+    authorId: number;
     text: string;
     photoUrl: string | null;
-    createdAt: string; // ISO datetime string (Instant)
+    createdAt: string;
     commentsCount: number;
     likesCount: number;
     dislikesCount: number;
 }
 
-// Comment model
 export interface Comment {
     id: number;
-    authorId: string;
+    authorId: number;
     text: string;
     photoUrl: string | null;
-    createdAt: string; // ISO datetime string (Instant)
+    createdAt: string;
     likesCount: number;
     dislikesCount: number;
-    // post is @JsonIgnore
+    parentCommentId?: number | null;
+    deletedAt?: string | null;
 }
 
 export interface Reaction {
     id: number;
     targetType: ReactionTargetType;
     targetId: number; // postId or commentId
-    authorId: string;
+    authorId: number;
     type: ReactionType;
-    createdAt: string; // ISO datetime string (Instant)
+    createdAt: string;
 }
 
 export type ReactionTargetType = 'POST' | 'COMMENT';
 
 export type ReactionType = 'LIKE' | 'DISLIKE';
 
-// Auth related types
 export interface LoginRequest {
-    email: string; // username=email
+    username: string;
     password: string;
 }
 
-export interface RegisterRequest {
-    id: string; // UUID
-    email: string;
+export interface SignupRequest {
+    username: string;
+    email?: string;
     password: string;
     firstName: string;
     lastName: string;
-    birthday: string; // ISO date format: "YYYY-MM-DD"
+    birthday?: string; // ISO date format: "YYYY-MM-DD"
 }
 
 export interface AuthResponse {
-    token: string;
-    user: User;
+    accessToken: string;
+    refreshToken: string;
+    tokenType: string; // "Bearer"
+}
+
+export interface RefreshTokenRequest {
+    refreshToken: string;
+}
+
+export interface SessionInfo {
+    id: string;
+    deviceInfo: string;
+    ipAddress: string;
+    createdAt: string;
+    lastUsedAt: string;
 }
 
 // API response wrappers
@@ -90,27 +103,45 @@ export interface PageResponse<T> {
 
 // Request DTOs for creating/updating
 export interface CreatePostRequest {
-    text: string;
+    text?: string;
     photoUrl?: string | null;
 }
 
 export interface UpdatePostRequest {
-    text: string;
+    text?: string;
     photoUrl?: string | null;
 }
 
 export interface CreateCommentRequest {
-    text: string;
+    text?: string;
+    photoUrl?: string | null;
+    parentCommentId?: number | null;
+}
+
+export interface UpdateCommentRequest {
+    text?: string;
     photoUrl?: string | null;
 }
 
 export interface CreateReactionRequest {
-    targetType: ReactionTargetType;
-    targetId: number;
     type: ReactionType;
 }
 
-// Response DTOs with additional data (if needed)
+export interface UserUpdateRequest {
+    username?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    birthday?: string;
+    bio?: string;
+    photoUrl?: string;
+}
+
+export interface PasswordChangeRequest {
+    currentPassword: string;
+    newPassword: string;
+}
+
 export interface PostWithAuthor extends Post {
     author?: User;
 }
@@ -119,7 +150,21 @@ export interface CommentWithAuthor extends Comment {
     author?: User;
 }
 
-// Constants for enum values (if you need them)
+export interface ErrorResponse {
+    type: string;
+    message: string;
+}
+
+export interface ValidationError {
+    field: string;
+    message: string;
+}
+
+export interface ValidationResponse {
+    type: string;
+    details: ValidationError[];
+}
+
 export const RoleEnumValues = {
     USER: 'USER' as const,
     ADMIN: 'ADMIN' as const,

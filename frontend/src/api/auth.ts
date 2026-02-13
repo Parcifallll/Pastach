@@ -9,7 +9,8 @@ interface JwtResponse {
 }
 
 interface SignupDTO {
-    id: string;
+    id: bigint;
+    username: string;
     email: string;
     firstName: string;
     lastName: string;
@@ -18,7 +19,7 @@ interface SignupDTO {
 }
 
 interface LoginDTO {
-    email: string;
+    username: string;
     password: string;
 }
 

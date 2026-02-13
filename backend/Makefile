@@ -105,3 +105,6 @@ netstat:
 
 tasklist:
 	@tasklist | findstr "$(filter-out $@,$(MAKECMDGOALS))"
+
+kill:
+	@taskkill /PID "$(filter-out $@,$(MAKECMDGOALS))" /F
