@@ -82,7 +82,6 @@ public class RefreshTokenService {
     }
 
     // logout from one device
-    @PreAuthorize("isAuthenticated()")
     @Transactional
     public void deleteRefreshToken(String token) {
         String tokenHash = hashToken(token);

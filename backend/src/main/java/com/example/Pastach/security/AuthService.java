@@ -96,6 +96,7 @@ public class AuthService {
         String newRefreshToken = jwtService.generateRefreshToken(user);
 
         refreshTokenService.saveRefreshToken(user, newRefreshToken, deviceInfo, ipAddress);
+        log.info("{} refreshed token", userId);
 
         long expiresInSeconds = TimeUnit.MILLISECONDS.toSeconds(jwtService.getAccessExpirationMs());
         return new JwtResponse(newAccessToken, newRefreshToken, expiresInSeconds);

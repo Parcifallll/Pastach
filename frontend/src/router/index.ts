@@ -34,18 +34,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/RegisterView.vue'),
         meta: { requiresAuth: false, guestOnly: true }
     },
-    // {
-    //     path: '/profile/:id',
-    //     name: 'Profile',
-    //     component: () => import('@/views/ProfileView.vue'),
-    //     meta: { requiresAuth: true }  // Требует авторизации
-    // },
-    // {
-    //     path: '/post/:id',
-    //     name: 'Post',
-    //     component: () => import('@/views/PostView.vue'),
-    //     meta: { requiresAuth: false }
-    // },
 ];
 
 const router = createRouter({
@@ -62,6 +50,7 @@ router.beforeEach(async (to, _from, next) => {
         await authStore.initializeAuth();
     }
 
+    // ✅ ИСПРАВЛЕНО: проверяем isAuthenticated ПОСЛЕ initializeAuth
     const isAuthenticated = authStore.isAuthenticated;
 
     // Check if route requires authentication
