@@ -22,7 +22,7 @@ import java.util.Map;
 @Slf4j
 public class KafkaConfig {
 
-    @Value("${spring.kafka.bootstrap-servers:kafka:9092}")
+    @Value("${spring.kafka.bootstrap-servers:localhost:9092,localhost:9093,localhost:9094}")
     private String bootstrapServers;
 
     @Bean
@@ -43,23 +43,25 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-    // topic: pastach.posts (3 partitions)
+    // topic: pastach.posts (3 partitions, 3 replicas, min.isr=2)
     @Bean
     public NewTopic postsTopic() {
-        log.info("Creating topic: pastach.posts (3 partitions)");
+        log.info("Creating topic: pastach.posts (3 partitions, replication=3, min.isr=2)");
         return TopicBuilder.name("pastach.posts")
                 .partitions(3)
-                .replicas(1)
+                .replicas(3)  // 3 brokers
+                .config("min.insync.replicas", "2")  // >= 2 brokers must confirm
                 .build();
     }
 
-    // topic: pastach.reactions (3 partitions)
+    // topic: pastach.reactions (6 partitions, 3 replicas, min.isr=2)
     @Bean
     public NewTopic reactionsTopic() {
-        log.info("Creating topic: pastach.reactions (3 partitions)");
+        log.info("Creating topic: pastach.reactions (6 partitions, replication=3, min.isr=2)");
         return TopicBuilder.name("pastach.reactions")
-                .partitions(3)
-                .replicas(1)
+                .partitions(6)
+                .replicas(3)  // Production: 3 brokers
+                .config("min.insync.replicas", "2")  // >= 2 brokers must confirm
                 .build();
     }
 }

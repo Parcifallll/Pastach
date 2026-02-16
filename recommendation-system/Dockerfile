@@ -30,3 +30,8 @@ FROM base AS grpc-server
 EXPOSE 50051
 
 CMD ["python", "-m", "app.grpc.grpc_server"]
+
+# Stage for Kafka consumer instances
+FROM base AS consumer
+
+CMD ["python", "-m", "app.kafka.consumer"]

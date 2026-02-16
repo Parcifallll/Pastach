@@ -251,3 +251,22 @@ class KafkaConsumerService:
 
 
 kafka_consumer = KafkaConsumerService()
+
+if __name__ == "__main__":
+    async def main():
+        await recommendation_service.init_redis()
+        logger.info("Redis initialized")
+
+        await kafka_consumer.start()
+        logger.info("Kafka consumer started, waiting...")
+
+        try:
+            while kafka_consumer.running:
+                await asyncio.sleep(1)
+        except KeyboardInterrupt:
+            logger.info("Shutting down...")
+        finally:
+            await kafka_consumer.stop()
+            await recommendation_service.close_redis()
+
+    asyncio.run(main())

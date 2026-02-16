@@ -9,7 +9,11 @@ services:
     depends_on:
       backend-postgres:
         condition: service_healthy
-      kafka:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
         condition: service_healthy
       backend-redis:
         condition: service_healthy
@@ -65,6 +69,77 @@ services:
         condition: service_healthy
     env_file:
       - .env
+    restart: unless-stopped
+
+  # Recommendation System with 3 consumer instances
+  recsys-consumer-1:
+    container_name: recsys-consumer-1
+    build:
+      context: ./recommendation-system
+      dockerfile: Dockerfile
+      target: consumer
+    image: recsys-consumer
+    depends_on:
+      recsys-grpc-server:
+        condition: service_started
+      recsys-postgres:
+        condition: service_healthy
+      recsys-redis:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      CONSUMER_ID: "consumer-1"
+    restart: unless-stopped
+
+  recsys-consumer-2:
+    container_name: recsys-consumer-2
+    image: recsys-consumer
+    depends_on:
+      recsys-grpc-server:
+        condition: service_started
+      recsys-postgres:
+        condition: service_healthy
+      recsys-redis:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      CONSUMER_ID: "consumer-2"
+    restart: unless-stopped
+
+  recsys-consumer-3:
+    container_name: recsys-consumer-3
+    image: recsys-consumer
+    depends_on:
+      recsys-grpc-server:
+        condition: service_started
+      recsys-postgres:
+        condition: service_healthy
+      recsys-redis:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      CONSUMER_ID: "consumer-3"
     restart: unless-stopped
 
   recsys-grpc-server:
@@ -137,9 +212,9 @@ services:
     logging:
       driver: none
 
-  kafka:
+  kafka-1:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka
+    container_name: kafka-1
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -151,24 +226,116 @@ services:
 
       # Listeners
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
 
-      # Replication (1 broker)
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      # Replication (3 brokers)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
 
       # Retention (7 days storage)
       KAFKA_LOG_RETENTION_HOURS: 168
 
       # Auto create topics
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+      # Leader rebalancing
+      KAFKA_AUTO_LEADER_REBALANCE_ENABLE: "true"
+      KAFKA_LEADER_IMBALANCE_CHECK_INTERVAL_SECONDS: 300
+
     volumes:
-      - kafka_data:/var/lib/kafka/data
-      - kafka_secrets:/etc/kafka/secrets
+      - kafka_1_data:/var/lib/kafka/data
+      - kafka_1_secrets:/etc/kafka/secrets
     healthcheck:
       test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092" ]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+
+  # Kafka Broker 2
+  kafka-2:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-2
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      # Listeners
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+
+      # Replication (3 brokers)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+
+      # Retention (7 days)
+      KAFKA_LOG_RETENTION_HOURS: 168
+
+      # Auto create topics
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+      # Leader rebalancing
+      KAFKA_AUTO_LEADER_REBALANCE_ENABLE: "true"
+      KAFKA_LEADER_IMBALANCE_CHECK_INTERVAL_SECONDS: 300
+
+    volumes:
+      - kafka_2_data:/var/lib/kafka/data
+      - kafka_2_secrets:/etc/kafka/secrets
+    healthcheck:
+      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093" ]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+
+  # Kafka Broker 3
+  kafka-3:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-3
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      # Listeners
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+
+      # Replication (3 brokers)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+
+      # Retention (7 days)
+      KAFKA_LOG_RETENTION_HOURS: 168
+
+      # Auto create topics
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+      # Leader rebalancing
+      KAFKA_AUTO_LEADER_REBALANCE_ENABLE: "true"
+      KAFKA_LEADER_IMBALANCE_CHECK_INTERVAL_SECONDS: 300
+
+    volumes:
+      - kafka_3_data:/var/lib/kafka/data
+      - kafka_3_secrets:/etc/kafka/secrets
+    healthcheck:
+      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9094" ]
       interval: 15s
       timeout: 10s
       retries: 3
@@ -179,8 +346,11 @@ volumes:
   zookeeper_data:
   zookeeper_logs:
   zookeeper_secrets:
-  kafka_data:
-  kafka_secrets:
-
+  kafka_1_data:
+  kafka_2_data:
+  kafka_3_data:
+  kafka_1_secrets:
+  kafka_2_secrets:
+  kafka_3_secrets:
   recsys_postgres_data:
   recsys_redis_data:

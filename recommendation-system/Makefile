@@ -1,7 +1,7 @@
 PROJECT_NAME := recommendation-system
 DOCKER_COMPOSE := docker-compose
 PYTHON := python3
-INFRA_SERVICES := recsys-postgres recsys-redis recsys-grpc-server
+INFRA_SERVICES := recsys-postgres recsys-redis recsys-grpc-server recsys-consumer-1 recsys-consumer-2 recsys-consumer-3
 
 RED := \033[0;31m
 GREEN := \033[0;32m
@@ -9,7 +9,7 @@ BLUE := \033[0;34m
 NC := \033[0m
 
 .PHONY: help dev infra infra-up infra-down run logs \
-        status ps db-connect alembic-upgrade alembic-downgrade venv requirements
+        status ps db-connect alembic-upgrade alembic-downgrade venv requirements docker-space
 
 help:
 	@echo "$(GREEN)Available commands:$(NC)"
@@ -86,3 +86,6 @@ venv:
 
 requirements:
 	pip install -r requirements.txt
+
+docker-space:
+	docker system df

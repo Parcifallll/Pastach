@@ -2,7 +2,7 @@
 PROJECT_NAME := backend-app
 DOCKER_COMPOSE := docker compose
 MAVEN := mvn
-INFRA_SERVICES := backend-postgres zookeeper kafka backend-redis
+INFRA_SERVICES := backend-postgres zookeeper kafka-1 kafka-2 kafka-3 backend-redis
 
 # Phony targets
 .PHONY: help dev infra infra-up infra-down build run logs \

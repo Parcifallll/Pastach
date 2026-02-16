@@ -1,0 +1,74 @@
+# Production configuration
+spring:
+  datasource:
+    url: ${BACKEND_POSTGRES_URL:jdbc:postgresql://localhost:5433/backend}
+    username: ${BACKEND_POSTGRES_USER:postgres}
+    password: ${BACKEND_POSTGRES_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    default-schema: public
+    loggers: slf4j
+  sql:
+    init:
+      mode: never
+
+  # Kafka Configuration (3 broker cluster)
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092,localhost:9093,localhost:9094}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all  # wait for all replicas (min.isr=2)
+      retries: 3
+      properties:
+        enable.idempotence: true # exactly-once delivery
+        spring.json.add.type.headers: false
+        max.in.flight.requests.per.connection: 5  # for idempotence with retries
+
+  data:
+    redis:
+      host: ${BACKEND_REDIS_HOST:localhost}
+      port: ${BACKEND_REDIS_PORT:6379}
+      password: ${BACKEND_REDIS_PASSWORD:admin}
+      database: ${BACKEND_REDIS_DB:0}
+
+  security:
+    user:
+      name: ${BACKEND_SECURITY_USERNAME:admin}
+      password: ${BACKEND_SECURITY_PASSWORD:admin}
+
+jwt:
+  secret: ${BACKEND_JWT_SECRET:5v8y/B?E(H+MbQeThWmZq4t7w!z$C&F)J@NcRfUjXn2r5u8x/A?D*G-KaPdSgVkY}
+  access-expiration: ${BACKEND_JWT_ACCESS_EXPIRATION:1800000} # 15 min
+  refresh-expiration: ${BACKEND_JWT_REFRESH_EXPIRATION:2592000000} # 30 days
+
+grpc:
+  host: ${RECSYS_GRPC_HOST:localhost}
+  port: ${RECSYS_GRPC_PORT:50051}
+
+viewed-posts:
+  ttl: ${VIEWED_POSTS_TTL:2592000}  # 30 days
+
+springdoc:
+  api-docs:
+    path: /docs/api
+  swagger-ui:
+    path: /docs/ui
+    enabled: true
+    docExpansion: none
+    tryItOutEnabled: true
+    displayRequestDuration: true
+    filter: true
