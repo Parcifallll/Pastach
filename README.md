@@ -14,6 +14,11 @@ Pastach - RESTful социальная сеть с новостной ленто
 ### Интерактивная документация:
 http://localhost:8080/docs/swagger-ui/index.html
 
+### Спецификация (можно открыть файл через https://editor.swagger.io/):
+Файл хранится в src/main/resources/openapi.yaml
+
+http://localhost:8080/v3/api-docs.yml
+
 ### Miro-доска проекта:
 https://miro.com/app/board/uXjVJxKXx9g=/?share_link_id=797244928745
 
