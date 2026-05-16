@@ -27,3 +27,4 @@ class PostResponse(PostBase):
 class PostWithEmbedding(PostResponse):
     embedding: Optional[list[float]] = None
     similarity_score: Optional[float] = None
+    recency_score: Optional[float] = None

@@ -32,7 +32,8 @@ class RecommendationServiceServicer(recposts_pb2_grpc.RecommendationServiceServi
             for post in posts_with_scores:
                 response.recommendations.add(
                     post_id=post.id,
-                    similarity_score=getattr(post, 'similarity_score', 0.0)
+                    similarity_score=getattr(post, 'similarity_score', 0.0),
+                    recency_score=getattr(post, 'recency_score', 0.0)
                 )
 
             logger.info(f"Return {len(posts_with_scores)} recommendations")

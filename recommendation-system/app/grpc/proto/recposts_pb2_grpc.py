@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import recposts_pb2 as recposts__pb2
+from . import recposts_pb2 as recposts__pb2
 
 
 class RecommendationServiceStub(object):

@@ -16,6 +16,7 @@ message GetRecommendationsRequest {
 message RecommendedPost {
   int64 post_id = 1;
   double similarity_score = 2;
+  double recency_score = 3;
 }
 
 message GetRecommendationsResponse {

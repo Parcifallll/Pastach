@@ -197,6 +197,7 @@ class ContentBasedRecommender:
             user_id: int,
             session: AsyncSession,
             limit: int = 10,
+            offset: int = 0,
             exclude_author_posts: bool = True,
             redis_client: Optional[aioredis.Redis] = None
     ) -> list[PostWithEmbedding]:
@@ -204,7 +205,7 @@ class ContentBasedRecommender:
         user_embedding = await self.get_user_preference_embedding(user_id, session, redis_client)
 
         if user_embedding is None:
-            return await self._get_recent_posts(user_id, session, limit, exclude_author_posts)
+            return await self._get_recent_posts(user_id, session, limit, offset, exclude_author_posts)
 
         query = select(Post).where(Post.embedding.isnot(None))
 
@@ -232,7 +233,7 @@ class ContentBasedRecommender:
         posts = [p for p in candidate_posts if p.id not in reacted_post_ids]
 
         if not posts:
-            return await self._get_recent_posts(user_id, session, limit, exclude_author_posts)
+            return await self._get_recent_posts(user_id, session, limit, offset, exclude_author_posts)
 
         post_embeddings = np.array([np.array(p.embedding) for p in posts])
         similarities = self.model.compute_similarities(user_embedding, post_embeddings)
@@ -241,25 +242,26 @@ class ContentBasedRecommender:
         for post, similarity in zip(posts, similarities):
             if similarity >= settings.MIN_SIMILARITY_THRESHOLD:
                 recency_boost = self._calculate_recency_boost(post.created_at)
-                final_score = float(similarity) * recency_boost
                 posts_with_scores.append(
                     PostWithEmbedding(
                         id=post.id,
                         authorId=post.author_id,
                         createdAt=post.created_at,
                         embedding=list(post.embedding),
-                        similarity_score=final_score
+                        similarity_score=similarity,
+                        recency_score=recency_boost
                     )
                 )
 
         posts_with_scores.sort(key=lambda x: x.similarity_score or 0, reverse=True)
-        return posts_with_scores[:limit]
+        return posts_with_scores[offset:offset + limit]
 
     async def _get_recent_posts(
             self,
             user_id: int,
             session: AsyncSession,
             limit: int,
+            offset: int,
             exclude_author_posts: bool
     ) -> list[PostWithEmbedding]:
         query = select(Post).where(Post.embedding.isnot(None))
@@ -267,7 +269,7 @@ class ContentBasedRecommender:
         if exclude_author_posts:
             query = query.where(Post.author_id != user_id)
 
-        query = query.order_by(Post.created_at.desc()).limit(limit)
+        query = query.order_by(Post.created_at.desc()).offset(offset).limit(limit)
 
         result = await session.execute(query)
         posts = result.scalars().all()
@@ -278,7 +280,8 @@ class ContentBasedRecommender:
                 authorId=p.author_id,
                 createdAt=p.created_at,
                 embedding=list(p.embedding),
-                similarity_score=None
+                similarity_score=None,
+                recency_score=None
             )
             for p in posts
         ]
