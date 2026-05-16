@@ -64,4 +64,15 @@ public class KafkaConfig {
                 .config("min.insync.replicas", "2")  // >= 2 brokers must confirm
                 .build();
     }
+
+    // topic: pastach.recommendations (6 partitions, 3 replicas, min.isr=2)
+    @Bean
+    public NewTopic recommendationsTopic() {
+        log.info("Creating topic: pastach.recommendations (6 partitions, replication=3, min.isr=2)");
+        return TopicBuilder.name("pastach.recommendations")
+                .partitions(6)
+                .replicas(3)  // Production: 3 brokers
+                .config("min.insync.replicas", "2")  // >= 2 brokers must confirm
+                .build();
+    }
 }

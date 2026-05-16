@@ -1,16 +1,23 @@
 package com.example.Pastach.kafka;
 
+import com.example.Pastach.dto.recommendation.RecommendedPostDTO;
 import com.example.Pastach.kafka.event.post.PostCreatedEvent;
 import com.example.Pastach.kafka.event.post.PostDeletedEvent;
 import com.example.Pastach.kafka.event.post.PostUpdatedEvent;
 import com.example.Pastach.kafka.event.reaction.ReactionCreatedEvent;
 import com.example.Pastach.kafka.event.reaction.ReactionDeletedEvent;
 import com.example.Pastach.kafka.event.reaction.ReactionUpdatedEvent;
+import com.example.Pastach.kafka.event.recommendation.RecommendationReactedEvent;
+import com.example.Pastach.kafka.event.recommendation.RecommendationReceivedEvent;
+import com.example.Pastach.kafka.event.recommendation.RecommendationSentimentUpdatedEvent;
+import com.example.Pastach.kafka.event.recommendation.RecommendationViewedEvent;
 import com.example.Pastach.model.Post;
 import com.example.Pastach.model.Reaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 
 @Service
 @Slf4j
@@ -158,6 +165,99 @@ public class KafkaProducerService {
                     });
         } catch (Exception e) {
             log.error("Failed to create reaction.deleted event: {}", e.getMessage(), e);
+        }
+    }
+
+    public void sendRecommendationReceived(Long userId, RecommendedPostDTO recommendation) {
+        try {
+            RecommendationReceivedEvent event = RecommendationReceivedEvent.from(userId, recommendation);
+            // user-based partitions and ordering
+            String key = userId.toString();
+
+            kafkaTemplate.send("pastach.recommendations", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent recommendation.received event for user {} post {} to topic {} partition {}",
+                                    userId,
+                                    recommendation.id(),
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send recommendation.received event for user {} post {}: {}",
+                                    userId, recommendation.id(), ex.getMessage(), ex);
+                        }
+                    });
+        } catch (Exception e) {
+            log.error("Failed to create recommendation.received event: {}", e.getMessage(), e);
+        }
+    }
+
+    public void sendRecommendationViewed(Long userId, Long postId, Instant viewedAt, Double viewDuration) {
+        try {
+            RecommendationViewedEvent event = RecommendationViewedEvent.from(userId, postId, viewedAt, viewDuration);
+            String key = userId.toString();
+
+            kafkaTemplate.send("pastach.recommendations", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent recommendation.viewed event for user {} post {} to topic {} partition {}",
+                                    userId,
+                                    postId,
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send recommendation.viewed event for user {} post {}: {}",
+                                    userId, postId, ex.getMessage(), ex);
+                        }
+                    });
+        } catch (Exception e) {
+            log.error("Failed to create recommendation.viewed event: {}", e.getMessage(), e);
+        }
+    }
+
+    public void sendRecommendationReacted(Long userId, Long postId, String reaction) {
+        try {
+            RecommendationReactedEvent event = RecommendationReactedEvent.from(userId, postId, reaction);
+            String key = userId.toString();
+
+            kafkaTemplate.send("pastach.recommendations", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent recommendation.reacted event for user {} post {} to topic {} partition {}",
+                                    userId,
+                                    postId,
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send recommendation.reacted event for user {} post {}: {}",
+                                    userId, postId, ex.getMessage(), ex);
+                        }
+                    });
+        } catch (Exception e) {
+            log.error("Failed to create recommendation.reacted event: {}", e.getMessage(), e);
+        }
+    }
+
+    public void sendRecommendationSentimentUpdated(Long postId, Double weightedSentimentScore) {
+        try {
+            RecommendationSentimentUpdatedEvent event = RecommendationSentimentUpdatedEvent.from(postId, weightedSentimentScore);
+            // all sentiment updates for same post go to same partition
+            String key = postId.toString();
+
+            kafkaTemplate.send("pastach.recommendations", key, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            log.info("Successfully sent recommendation.sentiment.updated event for post {} to topic {} partition {}",
+                                    postId,
+                                    result.getRecordMetadata().topic(),
+                                    result.getRecordMetadata().partition());
+                        } else {
+                            log.error("Failed to send recommendation.sentiment.updated event for post {}: {}",
+                                    postId, ex.getMessage(), ex);
+                        }
+                    });
+        } catch (Exception e) {
+            log.error("Failed to create recommendation.sentiment.updated event: {}", e.getMessage(), e);
         }
     }
 }

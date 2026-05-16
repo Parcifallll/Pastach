@@ -4,7 +4,7 @@ import com.example.Pastach.dto.mapper.PostMapper;
 import com.example.Pastach.dto.post.PostCreateDTO;
 import com.example.Pastach.dto.post.PostResponseDTO;
 import com.example.Pastach.dto.post.PostUpdateDTO;
-import com.example.Pastach.dto.recommendations.RecommendationScoresDTO;
+import com.example.Pastach.dto.recommendation.RecommendationScoresDTO;
 import com.example.Pastach.exception.PostNotFoundException;
 import com.example.Pastach.exception.UserNotFoundException;
 import com.example.Pastach.kafka.KafkaProducerService;
@@ -28,10 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service

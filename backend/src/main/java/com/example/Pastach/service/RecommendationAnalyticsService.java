@@ -1,7 +1,7 @@
 package com.example.Pastach.service;
 
-import com.example.Pastach.dto.recommendations.RecommendationScoresDTO;
-import com.example.Pastach.dto.recommendations.RecommendedPostDTO;
+import com.example.Pastach.dto.recommendation.RecommendationScoresDTO;
+import com.example.Pastach.dto.recommendation.RecommendedPostDTO;
 import com.example.Pastach.kafka.KafkaProducerService;
 import com.example.Pastach.model.Post;
 import com.example.Pastach.repository.PostRepository;

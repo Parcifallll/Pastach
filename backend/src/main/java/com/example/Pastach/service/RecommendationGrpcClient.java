@@ -1,10 +1,9 @@
 package com.example.Pastach.service;
 
-import com.example.Pastach.dto.recommendations.RecommendationScoresDTO;
+import com.example.Pastach.dto.recommendation.RecommendationScoresDTO;
 import com.example.Pastach.grpc.GetRecommendationsRequest;
 import com.example.Pastach.grpc.GetRecommendationsResponse;
 import com.example.Pastach.grpc.RecommendationServiceGrpc;
-import com.example.Pastach.grpc.RecommendedPost;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;

@@ -22,6 +22,9 @@ debug:
 	python -m main
 dev: run ## build and run app + infrastructure
 
+run-grpc-server:
+	python -m app.grpc.grpc_server
+
 infra: infra-up
 infra-up: ## run infrastructure
 	@$(DOCKER_COMPOSE) up --detach $(INFRA_SERVICES)

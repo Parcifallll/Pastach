@@ -1,4 +1,4 @@
-package com.example.Pastach.dto.recommendations;
+package com.example.Pastach.dto.recommendation;
 
 import lombok.Builder;
 import java.time.Instant;
