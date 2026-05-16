@@ -1,5 +1,6 @@
 package com.example.Pastach.service;
 
+import com.example.Pastach.dto.recommendations.RecommendationScoresDTO;
 import com.example.Pastach.grpc.GetRecommendationsRequest;
 import com.example.Pastach.grpc.GetRecommendationsResponse;
 import com.example.Pastach.grpc.RecommendationServiceGrpc;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class RecommendationGrpcClient {
 
-    private final ManagedChannel channel; // tcp + hhtp/2
+    private final ManagedChannel channel; // tcp + http/2
     private final RecommendationServiceGrpc.RecommendationServiceStub asyncStub;
 
     public RecommendationGrpcClient(
@@ -34,7 +35,7 @@ public class RecommendationGrpcClient {
         log.info("gRPC client is connected to {}:{}", host, port);
     }
 
-    public CompletableFuture<List<Long>> getRecommendedPostIdsAsync(Long userId, int limit, int offset, boolean excludeAuthorPosts) {  // added offset
+    public CompletableFuture<List<RecommendationScoresDTO>> getRecommendedPostsAsync(Long userId, int limit, int offset, boolean excludeAuthorPosts) {
         CompletableFuture<GetRecommendationsResponse> responseFuture = new CompletableFuture<>();
 
         GetRecommendationsRequest request = GetRecommendationsRequest.newBuilder()
@@ -65,7 +66,11 @@ public class RecommendationGrpcClient {
         return responseFuture.thenApply(response -> {
                     log.info("Got {} recommendations for userId={}", response.getTotalCount(), userId);
                     return response.getRecommendationsList().stream()
-                            .map(RecommendedPost::getPostId)
+                            .map(rec -> RecommendationScoresDTO.builder()
+                                    .postId(rec.getPostId())
+                                    .similarityScore(rec.getSimilarityScore())
+                                    .recencyScore(rec.getRecencyScore())
+                                    .build())
                             .collect(Collectors.toList());
                 })
                 .exceptionally(e -> {

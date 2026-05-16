@@ -4,6 +4,7 @@ import com.example.Pastach.dto.mapper.PostMapper;
 import com.example.Pastach.dto.post.PostCreateDTO;
 import com.example.Pastach.dto.post.PostResponseDTO;
 import com.example.Pastach.dto.post.PostUpdateDTO;
+import com.example.Pastach.dto.recommendations.RecommendationScoresDTO;
 import com.example.Pastach.exception.PostNotFoundException;
 import com.example.Pastach.exception.UserNotFoundException;
 import com.example.Pastach.kafka.KafkaProducerService;
@@ -27,8 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +44,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final KafkaProducerService kafkaProducer;
     private final RecommendationGrpcClient recommendationGrpcClient;
+    private final RecommendationAnalyticsService recommendationAnalyticsService;
 
 
     @PreAuthorize("isAuthenticated()")
@@ -138,10 +142,11 @@ public class PostService {
     public CompletableFuture<List<PostResponseDTO>> getRecommendedPosts(Long userId, int limit, int offset) {
         log.info("Request for recommendations for userId={}, limit={}", userId, limit);
 
-        CompletableFuture<List<Long>> idsFuture = recommendationGrpcClient.getRecommendedPostIdsAsync(userId, limit, offset, true);
+        CompletableFuture<List<RecommendationScoresDTO>> scoresFuture =
+                recommendationGrpcClient.getRecommendedPostsAsync(userId, limit, offset, true);
 
-        return idsFuture.thenCompose(recommendedIds -> {
-                    if (recommendedIds.isEmpty()) {
+        return scoresFuture.thenCompose(scores -> {
+                    if (scores.isEmpty()) {
                         log.warn("Recommendations were not received, fallback to recent posts");
                         return CompletableFuture.supplyAsync(() -> {
                             Pageable pageable = PageRequest.of(offset / limit, limit);
@@ -149,11 +154,21 @@ public class PostService {
                             return recentPosts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
                         });
                     } else {
-                        Long[] idsArray = recommendedIds.toArray(new Long[0]);
-                        return CompletableFuture.supplyAsync(() -> {
-                            List<Post> posts = postRepository.findAllByIdInOrderByField(idsArray);
-                            return posts.stream().map(postMapper::toResponseDto).collect(Collectors.toList());
-                        });
+                        // fetch all posts in one query
+                        List<Long> postIds = scores.stream()
+                                .map(RecommendationScoresDTO::postId)
+                                .collect(Collectors.toList());
+                        List<Post> posts = postRepository.findAllById(postIds);
+//                        Map<Long, Post> postMap = posts.stream()
+//                                .collect(Collectors.toMap(Post::getId, Function.identity()));
+
+                        recommendationAnalyticsService.logRecommendationsReceived(userId, scores); // send to analytics
+
+                        return CompletableFuture.completedFuture(
+                                posts.stream()
+                                        .map(postMapper::toResponseDto)
+                                        .collect(Collectors.toList())
+                        );
                     }
                 })
                 .orTimeout(30, TimeUnit.SECONDS) // if CompletableFuture<> did not receive posts from DB
