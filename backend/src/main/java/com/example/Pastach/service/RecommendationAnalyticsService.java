@@ -2,14 +2,17 @@ package com.example.Pastach.service;
 
 import com.example.Pastach.dto.recommendation.RecommendationScoresDTO;
 import com.example.Pastach.dto.recommendation.RecommendedPostDTO;
+import com.example.Pastach.exception.PostNotFoundException;
 import com.example.Pastach.kafka.KafkaProducerService;
 import com.example.Pastach.model.Post;
 import com.example.Pastach.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -51,8 +54,22 @@ public class RecommendationAnalyticsService {
                         .build();
 
                 kafkaProducer.sendRecommendationReceived(userId, event);
-                log.debug("Logged recommendation for user={}, post={}", userId, score.postId());
             }
         });
+    }
+
+    @Async
+    public void logRecommendationViewed(Long userId, Long postId, Instant viewedAt, Double viewDuration) {
+        try {
+            if (!postRepository.existsById(postId)) {
+                log.warn("Post {} not found when logging view for user {}", postId, userId);
+                throw new PostNotFoundException(postId);
+            }
+
+            kafkaProducer.sendRecommendationViewed(userId, postId, viewedAt, viewDuration);
+        } catch (Exception e) {
+            log.error("Error logging recommendation view for user={}, post={}: {}",
+                    userId, postId, e.getMessage(), e);
+        }
     }
 }

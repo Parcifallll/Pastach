@@ -4,10 +4,14 @@ import com.example.Pastach.dto.post.PostCreateDTO;
 import com.example.Pastach.dto.post.PostResponseDTO;
 import com.example.Pastach.dto.post.PostUpdateDTO;
 import com.example.Pastach.dto.reaction.ReactionCreateDTO;
+import com.example.Pastach.dto.recommendation.RecommendationViewReportDTO;
+import com.example.Pastach.exception.PostNotFoundException;
 import com.example.Pastach.model.ReactionTargetType;
 import com.example.Pastach.model.User;
+import com.example.Pastach.repository.PostRepository;
 import com.example.Pastach.service.PostService;
 import com.example.Pastach.service.ReactionService;
+import com.example.Pastach.service.RecommendationAnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -50,7 +54,7 @@ public class PostController {
 
     private final PostService postService;
     private final ReactionService reactionService;
-
+    private final RecommendationAnalyticsService recommendationAnalyticsService;
 
     @PostMapping
     @Operation(
@@ -363,5 +367,40 @@ public class PostController {
                     log.error("Controller error: ", e);
                     return ResponseEntity.ok(PagedModel.empty());  // Fallback empty with HATEOAS
                 });
+    }
+
+    @PostMapping("/recommendations/{postId}/view")
+    @Operation(
+            summary = "Report post view in recommendations",
+            description = "Record user viewed a recommended post with view duration for analytics"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "View recorded successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "User not authenticated"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Post not found"
+            )
+    })
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> reportRecommendationView(
+            @PathVariable Long postId,
+            @RequestBody RecommendationViewReportDTO dto,
+            @AuthenticationPrincipal User currentUser) {
+
+        recommendationAnalyticsService.logRecommendationViewed(
+                currentUser.getId(),
+                postId,
+                dto.viewedAt(),
+                dto.viewDuration()
+        );
+
+        return ResponseEntity.noContent().build();
     }
 }
