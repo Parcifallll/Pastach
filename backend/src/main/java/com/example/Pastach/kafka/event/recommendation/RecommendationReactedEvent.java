@@ -1,5 +1,6 @@
 package com.example.Pastach.kafka.event.recommendation;
 
+import com.example.Pastach.model.ReactionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,10 +24,10 @@ public class RecommendationReactedEvent {
     public static class RecommendationReactedPayload {
         private Long userId;
         private Long postId;
-        private String reaction;
+        private ReactionType reaction;
     }
 
-    public static RecommendationReactedEvent from(Long userId, Long postId, String reaction) {
+    public static RecommendationReactedEvent from(Long userId, Long postId, ReactionType reaction) {
         RecommendationReactedPayload payload = new RecommendationReactedPayload(
                 userId,
                 postId,

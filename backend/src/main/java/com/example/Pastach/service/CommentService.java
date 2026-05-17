@@ -6,6 +6,7 @@ import com.example.Pastach.dto.comment.CommentUpdateDTO;
 import com.example.Pastach.dto.mapper.CommentMapper;
 import com.example.Pastach.exception.CommentNotFoundException;
 import com.example.Pastach.exception.PostNotFoundException;
+import com.example.Pastach.kafka.KafkaProducerService;
 import com.example.Pastach.model.Comment;
 import com.example.Pastach.model.Post;
 import com.example.Pastach.model.ReactionTargetType;
@@ -34,7 +35,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
-    private final ReactionRepository reactionRepository;
+    private final KafkaProducerService kafkaProducerService;
 
 
     @PreAuthorize("isAuthenticated()")
@@ -72,6 +73,8 @@ public class CommentService {
         post.setCommentsCount(post.getCommentsCount() + 1);
         postRepository.save(post);
 
+        kafkaProducerService.sendRecommendationSentimentUpdated(comment.getPost().getId(), comment.getText());
+
         return commentMapper.toResponseDto(comment);
     }
 
@@ -101,6 +104,7 @@ public class CommentService {
 
         commentMapper.updateFromDto(dto, comment);
         comment = commentRepository.save(comment);
+        kafkaProducerService.sendRecommendationSentimentUpdated(comment.getPost().getId(), comment.getText());
 
         return commentMapper.toResponseDto(comment);
     }
@@ -125,6 +129,7 @@ public class CommentService {
 
         comment.setDeletedAt(Instant.now());
         commentRepository.save(comment);
+        kafkaProducerService.sendRecommendationSentimentUpdated(comment.getPost().getId(), comment.getText());
 
         // count only active comments
         Post post = comment.getPost();

@@ -13,6 +13,7 @@ import com.example.Pastach.kafka.event.recommendation.RecommendationSentimentUpd
 import com.example.Pastach.kafka.event.recommendation.RecommendationViewedEvent;
 import com.example.Pastach.model.Post;
 import com.example.Pastach.model.Reaction;
+import com.example.Pastach.model.ReactionType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -215,7 +216,7 @@ public class KafkaProducerService {
         }
     }
 
-    public void sendRecommendationReacted(Long userId, Long postId, String reaction) {
+    public void sendRecommendationReacted(Long userId, Long postId, ReactionType reaction) {
         try {
             RecommendationReactedEvent event = RecommendationReactedEvent.from(userId, postId, reaction);
             String key = userId.toString();
@@ -238,9 +239,9 @@ public class KafkaProducerService {
         }
     }
 
-    public void sendRecommendationSentimentUpdated(Long postId, Double weightedSentimentScore) {
+    public void sendRecommendationSentimentUpdated(Long postId, String commentText) {
         try {
-            RecommendationSentimentUpdatedEvent event = RecommendationSentimentUpdatedEvent.from(postId, weightedSentimentScore);
+            RecommendationSentimentUpdatedEvent event = RecommendationSentimentUpdatedEvent.from(postId, commentText);
             // all sentiment updates for same post go to same partition
             String key = postId.toString();
 

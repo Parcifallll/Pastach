@@ -58,7 +58,10 @@ public class ReactionService {
             if (r.getType() == type) {
                 // Same type - remove reaction
                 reactionRepository.delete(r);
-                if (targetType == ReactionTargetType.POST) kafkaProducer.sendReactionDeleted(r.getId(), authorId);
+                if (targetType == ReactionTargetType.POST) {
+                    kafkaProducer.sendReactionDeleted(r.getId(), authorId);
+                    kafkaProducer.sendRecommendationReacted(user.getId(), targetId, type);
+                }
             } else {
                 // another type - update reaction
                 r.setType(type);

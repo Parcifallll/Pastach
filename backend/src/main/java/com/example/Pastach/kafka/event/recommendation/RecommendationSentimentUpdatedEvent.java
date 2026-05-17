@@ -22,13 +22,13 @@ public class RecommendationSentimentUpdatedEvent {
     @NoArgsConstructor
     public static class RecommendationSentimentPayload {
         private Long postId;
-        private Double weightedSentimentScore;
+        private String commentText;
     }
 
-    public static RecommendationSentimentUpdatedEvent from(Long postId, Double weightedSentimentScore) {
+    public static RecommendationSentimentUpdatedEvent from(Long postId, String commentText) {
         RecommendationSentimentPayload payload = new RecommendationSentimentPayload(
                 postId,
-                weightedSentimentScore
+                commentText
         );
 
         return new RecommendationSentimentUpdatedEvent(
