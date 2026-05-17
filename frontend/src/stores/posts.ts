@@ -4,7 +4,6 @@ import { apiClient } from '@/api/axios';
 import type { Post, PagedModel, CreatePostRequest, UpdatePostRequest } from '@/types/models';
 
 export const usePostsStore = defineStore('posts', () => {
-    // State
     const posts = ref<Post[]>([]);
     const currentPost = ref<Post | null>(null);
     const loading = ref(false);
@@ -14,8 +13,13 @@ export const usePostsStore = defineStore('posts', () => {
     const pageSize = ref(15);
     const totalPages = ref(0);
     const totalElements = ref(0);
+    const recommendedPosts = ref<Post[]>([]);
+    const recommendationsLoading = ref(false);
+    const recommendationsError = ref<string | null>(null);
+    const recommendationsHasMore = ref(true);
+    const recommendationsOffset = ref(0);
+    const recommendationsLimit = ref(10);
 
-    // Actions
     const fetchPosts = async (page: number = 0, size: number = 15) => {
         loading.value = true;
         error.value = null;
@@ -161,6 +165,9 @@ export const usePostsStore = defineStore('posts', () => {
             posts.value = posts.value.filter(p => p.id !== id);
             totalElements.value = Math.max(0, totalElements.value - 1);
 
+            // Remove from recommended posts if present
+            recommendedPosts.value = recommendedPosts.value.filter(p => p.id !== id);
+
             // Clear currentPost if it's the same
             if (currentPost.value?.id === id) {
                 currentPost.value = null;
@@ -189,8 +196,54 @@ export const usePostsStore = defineStore('posts', () => {
         error.value = null;
     };
 
+    const fetchRecommendations = async (offset: number = 0, limit: number = 10) => {
+        recommendationsLoading.value = true;
+        recommendationsError.value = null;
+
+        try {
+            // GET /posts/recommendations?limit=10&offset=0
+            const response = await apiClient.get<PagedModel<Post>>('/posts/recommendations', {
+                params: { limit, offset }
+            });
+
+            const data = response.data;
+            const newPosts = data._embedded?.postResponseDTOList || [];
+
+            if (offset === 0) {
+                recommendedPosts.value = newPosts;
+            } else {
+                recommendedPosts.value = [...recommendedPosts.value, ...newPosts];
+            }
+
+            recommendationsOffset.value = offset;
+            recommendationsLimit.value = limit;
+
+
+            const totalCount = data.page?.totalElements || 0;
+            recommendationsHasMore.value = (offset + newPosts.length) < totalCount;
+        } catch (err: any) {
+            recommendationsError.value = err.response?.data?.message || 'Failed to fetch recommendations';
+            throw err;
+        } finally {
+            recommendationsLoading.value = false;
+        }
+    };
+
+    const loadMoreRecommendations = async () => {
+        if (!recommendationsHasMore.value || recommendationsLoading.value) return;
+        const nextOffset = recommendationsOffset.value + recommendationsLimit.value;
+        await fetchRecommendations(nextOffset, recommendationsLimit.value);
+    };
+
+    const resetRecommendations = () => {
+        recommendedPosts.value = [];
+        recommendationsOffset.value = 0;
+        recommendationsLimit.value = 10;
+        recommendationsHasMore.value = true;
+        recommendationsError.value = null;
+    };
+
     return {
-        // State
         posts,
         currentPost,
         loading,
@@ -200,7 +253,6 @@ export const usePostsStore = defineStore('posts', () => {
         pageSize,
         totalPages,
         totalElements,
-        // Actions
         fetchPosts,
         fetchPostById,
         fetchUserPosts,
@@ -209,5 +261,15 @@ export const usePostsStore = defineStore('posts', () => {
         deletePost,
         loadMorePosts,
         resetPosts,
+
+        recommendedPosts,
+        recommendationsLoading,
+        recommendationsError,
+        recommendationsHasMore,
+        recommendationsOffset,
+        recommendationsLimit,
+        fetchRecommendations,
+        loadMoreRecommendations,
+        resetRecommendations,
     };
 });

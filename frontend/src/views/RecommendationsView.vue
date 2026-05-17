@@ -60,6 +60,7 @@
         <div
             v-for="post in postsStore.recommendedPosts"
             :key="post.id"
+            :ref="el => setPostRef(post.id, el)"
             class="bg-white/15 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-white/20"
         >
           <!-- Post header -->
@@ -168,13 +169,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePostsStore } from '@/stores/posts'
 import { apiClient } from '@/api/axios'
+import { postsApi } from '@/api/posts'
 import type { ReactionType } from '@/types/models'
 
-const router = useRouter()
 const authStore = useAuthStore()
 const postsStore = usePostsStore()
 
@@ -182,54 +182,109 @@ const errorMessage = ref<string | null>(null)
 
 // Infinite scroll observer
 const loadMoreTrigger = ref<HTMLElement | null>(null)
-let observer: IntersectionObserver | null = null
+let scrollObserver: IntersectionObserver | null = null
+
+// Post view tracking
+const postRefs = new Map<number, HTMLElement>()
+const postViewTracking = new Map<number, number>() // postId -> startTime
+const reportedPosts = new Set<number>() // posts that already sent view event
+let viewObserver: IntersectionObserver | null = null
+
+// Set post element ref for view tracking
+const setPostRef = (postId: number, el: any) => {
+  if (el) {
+    postRefs.set(postId, el)
+  }
+}
 
 // Load recommendations on mount
 onMounted(async () => {
   try {
-    // Reset previous recommendations
     postsStore.resetRecommendations()
-
-    // Load first batch
     await postsStore.fetchRecommendations(0, 10)
 
-    // Setup infinite scroll observer
-    setupInfiniteScroll()
+    // Setup observers after short delay to ensure DOM is ready
+    setTimeout(() => {
+      setupInfiniteScroll()
+      setupPostViewObserver()
+    }, 100)
   } catch (error: any) {
     errorMessage.value = error.response?.data?.message || 'Не удалось загрузить рекомендации'
   }
 })
 
-// Cleanup observer on unmount
+// Cleanup observers on unmount
 onUnmounted(() => {
-  if (observer) {
-    observer.disconnect()
+  if (scrollObserver) {
+    scrollObserver.disconnect()
+  }
+  if (viewObserver) {
+    viewObserver.disconnect()
   }
 })
 
 // Setup Intersection Observer for infinite scroll
 const setupInfiniteScroll = () => {
-  // Small delay to ensure DOM is rendered
-  setTimeout(() => {
-    if (!loadMoreTrigger.value) {
-      return
-    }
+  if (!loadMoreTrigger.value) {
+    return
+  }
 
-    observer = new IntersectionObserver(
-        (entries) => {
-          const firstEntry = entries[0]
-          if (firstEntry.isIntersecting && postsStore.recommendationsHasMore && !postsStore.recommendationsLoading) {
-            loadMore()
-          }
-        },
-        {
-          rootMargin: '100px',
-          threshold: 0.1
+  scrollObserver = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0]
+        if (!firstEntry) return
+        if (firstEntry.isIntersecting && postsStore.recommendationsHasMore && !postsStore.recommendationsLoading) {
+          loadMore()
         }
-    )
+      },
+      {
+        rootMargin: '100px',
+        threshold: 0.1
+      }
+  )
 
-    observer.observe(loadMoreTrigger.value)
-  }, 100)
+  scrollObserver.observe(loadMoreTrigger.value)
+}
+
+const setupPostViewObserver = () => {
+  viewObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          // Find post id from observed element
+          const postId = Array.from(postRefs.entries())
+              .find(([_, el]) => el === entry.target)?.[0]
+
+          if (!postId) return
+
+          if (entry.isIntersecting) {
+            if (!postViewTracking.has(postId)) {
+              postViewTracking.set(postId, Date.now())
+            }
+          } else {
+            const startTime = postViewTracking.get(postId)
+            if (startTime && !reportedPosts.has(postId)) {
+              const duration = (Date.now() - startTime) / 1000 // seconds
+              const viewedAt = new Date().toISOString()
+
+              postsApi.reportRecommendationView(postId, viewedAt, duration)
+                  .catch(err => console.warn(`Failed to report view for post ${postId}:`, err))
+
+              reportedPosts.add(postId)
+              postViewTracking.delete(postId)
+            }
+          }
+        })
+      },
+      {
+        threshold: 0.5 // 50% visible
+      }
+  )
+
+  postRefs.forEach((el) => {
+    if (viewObserver) {
+      viewObserver.observe(el)
+    }
+  })
 }
 
 // Refresh recommendations from beginning
@@ -256,7 +311,8 @@ const handleDeletePost = async (postId: number) => {
 // Reaction handler
 const handleReaction = async (postId: number, type: ReactionType) => {
   try {
-    await apiClient.put(`/posts/${postId}/reactions`, { type })
+    // isRecommendation=true tells backend this is a recommended post reaction
+    await apiClient.put(`/posts/${postId}/reactions?isRecommendation=true`, { type })
     const currentOffset = postsStore.recommendationsOffset
     const currentLimit = postsStore.recommendationsLimit
     await postsStore.fetchRecommendations(0, currentOffset + currentLimit)
@@ -269,6 +325,14 @@ const handleReaction = async (postId: number, type: ReactionType) => {
 const loadMore = async () => {
   try {
     await postsStore.loadMoreRecommendations()
+
+    setTimeout(() => {
+      if (viewObserver) {
+        postRefs.forEach((el) => {
+          viewObserver!.observe(el)
+        })
+      }
+    }, 50)
   } catch (error: any) {
     errorMessage.value = 'Не удалось загрузить рекомендации'
   }

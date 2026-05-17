@@ -29,6 +29,11 @@ interface PostUpdateDTO {
     photoUrl?: string | null;
 }
 
+interface RecommendationViewDTO {
+    viewedAt: string;
+    viewDuration: number;
+}
+
 export const postsApi = {
     // GET /posts?page=0&size=15&sort=createdAt,desc
     getPosts: async (page: number = 0, size: number = 15): Promise<PagedPostsResponse> => {
@@ -79,4 +84,13 @@ export const postsApi = {
         );
         return response.data;
     },
+
+    // POST /posts/recommendations/{postId}/view
+    reportRecommendationView: async (postId: number, viewedAt: string, viewDuration: number): Promise<void> => {
+        const payload: RecommendationViewDTO = {
+            viewedAt,
+            viewDuration
+        };
+        await apiClient.post(`/posts/recommendations/${postId}/view`, payload);
+    }
 };
