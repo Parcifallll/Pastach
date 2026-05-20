@@ -1,25 +1,25 @@
 services:
-  backend-app:
-    container_name: backend-app
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8080:${BACKEND_PORT}"
-    depends_on:
-      backend-postgres:
-        condition: service_healthy
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-      backend-redis:
-        condition: service_healthy
-    env_file:
-      - .env
-    restart: unless-stopped
+#  backend-app:
+#    container_name: backend-app
+#    build:
+#      context: ./backend
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8080:${BACKEND_PORT}"
+#    depends_on:
+#      backend-postgres:
+#        condition: service_healthy
+#      kafka-1:
+#        condition: service_healthy
+#      kafka-2:
+#        condition: service_healthy
+#      kafka-3:
+#        condition: service_healthy
+#      backend-redis:
+#        condition: service_healthy
+#    env_file:
+#      - .env
+#    restart: unless-stopped
 
   backend-postgres:
     container_name: backend-postgres
@@ -52,24 +52,24 @@ services:
       timeout: 5s
       retries: 3
 
-  recsys-app:
-    container_name: recsys-app
-    build:
-      context: ./recommendation-system
-      dockerfile: Dockerfile
-      target: app
-    ports:
-      - "8000:${RECSYS_PORT}"
-    depends_on:
-      recsys-grpc-server:
-        condition: service_started
-      recsys-postgres:
-        condition: service_healthy
-      recsys-redis:
-        condition: service_healthy
-    env_file:
-      - .env
-    restart: unless-stopped
+#  recsys-app:
+#    container_name: recsys-app
+#    build:
+#      context: ./recommendation-system
+#      dockerfile: Dockerfile
+#      target: app
+#    ports:
+#      - "8000:${RECSYS_PORT}"
+#    depends_on:
+#      recsys-grpc-server:
+#        condition: service_started
+#      recsys-postgres:
+#        condition: service_healthy
+#      recsys-redis:
+#        condition: service_healthy
+#    env_file:
+#      - .env
+#    restart: unless-stopped
 
   # Recommendation System with 3 consumer instances
   recsys-consumer-1:
@@ -80,8 +80,8 @@ services:
       target: consumer
     image: recsys-consumer
     depends_on:
-      recsys-grpc-server:
-        condition: service_started
+#      recsys-grpc-server:
+#        condition: service_started
       recsys-postgres:
         condition: service_healthy
       recsys-redis:
@@ -102,8 +102,8 @@ services:
     container_name: recsys-consumer-2
     image: recsys-consumer
     depends_on:
-      recsys-grpc-server:
-        condition: service_started
+#      recsys-grpc-server:
+#        condition: service_started
       recsys-postgres:
         condition: service_healthy
       recsys-redis:
@@ -124,8 +124,8 @@ services:
     container_name: recsys-consumer-3
     image: recsys-consumer
     depends_on:
-      recsys-grpc-server:
-        condition: service_started
+#      recsys-grpc-server:
+#        condition: service_started
       recsys-postgres:
         condition: service_healthy
       recsys-redis:
@@ -142,22 +142,22 @@ services:
       CONSUMER_ID: "consumer-3"
     restart: unless-stopped
 
-  recsys-grpc-server:
-    container_name: recsys-grpc-server
-    build:
-      context: ./recommendation-system
-      dockerfile: Dockerfile
-      target: grpc-server
-    ports:
-      - "${RECSYS_GRPC_PORT}:${RECSYS_GRPC_PORT}"
-    depends_on:
-      recsys-postgres:
-        condition: service_healthy
-      recsys-redis:
-        condition: service_healthy
-    env_file:
-      - .env
-    restart: unless-stopped
+#  recsys-grpc-server:
+#    container_name: recsys-grpc-server
+#    build:
+#      context: ./recommendation-system
+#      dockerfile: Dockerfile
+#      target: grpc-server
+#    ports:
+#      - "${RECSYS_GRPC_PORT}:${RECSYS_GRPC_PORT}"
+#    depends_on:
+#      recsys-postgres:
+#        condition: service_healthy
+#      recsys-redis:
+#        condition: service_healthy
+#    env_file:
+#      - .env
+#    restart: unless-stopped
 
   recsys-postgres:
     container_name: recsys-postgres
@@ -340,6 +340,101 @@ services:
       timeout: 10s
       retries: 3
 
+  clickhouse-rec-analytics:
+    container_name: clickhouse-rec-analytics
+    image: clickhouse/clickhouse-server:latest
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: ${REC_ANALYTICS_CLICKHOUSE_DB}
+      CLICKHOUSE_USER: ${REC_ANALYTICS_CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${REC_ANALYTICS_CLICKHOUSE_PASSWORD}
+    volumes:
+      - analytics_clickhouse_data:/var/lib/clickhouse
+      - analytics_clickhouse_logs:/var/log/clickhouse-server
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8123/ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  rec-analytics-app:
+    container_name: rec-analytics-app
+    build:
+      context: ./recommendation-analytics
+      dockerfile: Dockerfile
+      target: app
+    image: rec-analytics-app
+    depends_on:
+      clickhouse-rec-analytics:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: on-failure
+
+  rec-analytics-consumer-1:
+    container_name: rec-analytics-consumer-1
+    build:
+      context: ./recommendation-analytics
+      dockerfile: Dockerfile
+      target: consumer
+    image: rec-analytics-consumer
+    depends_on:
+      rec-analytics-app:
+        condition: service_completed_successfully
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-1:9092,kafka-2:9093,kafka-3:9094"
+      CONSUMER_ID: "analytics-consumer-1"
+    restart: unless-stopped
+
+  rec-analytics-consumer-2:
+    container_name: rec-analytics-consumer-2
+    image: rec-analytics-consumer
+    depends_on:
+      rec-analytics-app:
+        condition: service_completed_successfully
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-1:9092,kafka-2:9093,kafka-3:9094"
+      CONSUMER_ID: "analytics-consumer-2"
+    restart: unless-stopped
+
+  rec-analytics-consumer-3:
+    container_name: rec-analytics-consumer-3
+    image: rec-analytics-consumer
+    depends_on:
+      rec-analytics-app:
+        condition: service_completed_successfully
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-1:9092,kafka-2:9093,kafka-3:9094"
+      CONSUMER_ID: "analytics-consumer-3"
+    restart: unless-stopped
+
 volumes:
   backend_postgres_data:
   backend_redis_data:
@@ -354,3 +449,5 @@ volumes:
   kafka_3_secrets:
   recsys_postgres_data:
   recsys_redis_data:
+  analytics_clickhouse_data:
+  analytics_clickhouse_logs:
