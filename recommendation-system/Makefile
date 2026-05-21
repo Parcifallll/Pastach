@@ -87,7 +87,7 @@ proto:
 venv:
 	python -m venv venv
 
-requirements:
+pip-install:
 	pip install -r requirements.txt
 
 docker-space:
