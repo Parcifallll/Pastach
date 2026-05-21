@@ -14,7 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 FROM base as app
-CMD ["sh", "-c", "alembic upgrade head"]
+ENV PYTHONPATH=/app
+CMD ["python", "-m", "app.database.apply_schema"]
 
 FROM base as consumer
 ENV PYTHONPATH=/app

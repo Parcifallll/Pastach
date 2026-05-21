@@ -31,14 +31,6 @@ class ClickHouseClient:
         try:
             created_at_dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
 
-            query = """
-                    INSERT INTO viewed_recommended_posts (
-                        user_id, post_id, author_id, similarity_score, recency_score,
-                        engagement_score, weighted_sentiment_score, created_at,
-                        viewed_at, view_duration, reaction, is_recommended
-                    ) VALUES \
-                    """
-
             data = [(
                 user_id,
                 post_id,
@@ -55,7 +47,7 @@ class ClickHouseClient:
             )]
 
             self.client.insert(
-                table='viewed_recommended_posts',
+                table='viewed_posts',
                 data=data,
                 column_names=[
                     'user_id', 'post_id', 'author_id', 'similarity_score',
@@ -81,7 +73,7 @@ class ClickHouseClient:
             viewed_at_dt = datetime.fromisoformat(viewed_at.replace('Z', '+00:00'))
 
             query = f"""
-                ALTER TABLE viewed_recommended_posts
+                ALTER TABLE viewed_posts
                 UPDATE 
                     viewed_at = '{viewed_at_dt.strftime('%Y-%m-%d %H:%M:%S')}',
                     view_duration = {view_duration}
@@ -104,7 +96,7 @@ class ClickHouseClient:
     ):
         try:
             query = f"""
-                ALTER TABLE viewed_recommended_posts
+                ALTER TABLE viewed_posts
                 UPDATE reaction = '{reaction}'
                 WHERE user_id = {user_id} AND post_id = {post_id}
             """
@@ -125,7 +117,7 @@ class ClickHouseClient:
     ):
         try:
             query = f"""
-                ALTER TABLE viewed_recommended_posts
+                ALTER TABLE viewed_posts
                 UPDATE weighted_sentiment_score = {weighted_sentiment_score}
                 WHERE user_id = {user_id} AND post_id = {post_id}
             """

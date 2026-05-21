@@ -353,26 +353,13 @@ services:
     volumes:
       - analytics_clickhouse_data:/var/lib/clickhouse
       - analytics_clickhouse_logs:/var/log/clickhouse-server
+      - ./recommendation-analytics/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8123/ping" ]
-      interval: 5s
+      test: [ "CMD", "clickhouse-client", "--query", "SELECT 1" ]
+      interval: 10s
       timeout: 5s
       retries: 3
     restart: unless-stopped
-
-  rec-analytics-app:
-    container_name: rec-analytics-app
-    build:
-      context: ./recommendation-analytics
-      dockerfile: Dockerfile
-      target: app
-    image: rec-analytics-app
-    depends_on:
-      clickhouse-rec-analytics:
-        condition: service_healthy
-    env_file:
-      - .env
-    restart: on-failure
 
   rec-analytics-consumer-1:
     container_name: rec-analytics-consumer-1
@@ -382,8 +369,8 @@ services:
       target: consumer
     image: rec-analytics-consumer
     depends_on:
-      rec-analytics-app:
-        condition: service_completed_successfully
+      clickhouse-rec-analytics:
+        condition: service_healthy
       kafka-1:
         condition: service_healthy
       kafka-2:
@@ -401,8 +388,8 @@ services:
     container_name: rec-analytics-consumer-2
     image: rec-analytics-consumer
     depends_on:
-      rec-analytics-app:
-        condition: service_completed_successfully
+      clickhouse-rec-analytics:
+        condition: service_healthy
       kafka-1:
         condition: service_healthy
       kafka-2:
@@ -420,14 +407,14 @@ services:
     container_name: rec-analytics-consumer-3
     image: rec-analytics-consumer
     depends_on:
-      rec-analytics-app:
-        condition: service_completed_successfully
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
+     clickhouse-rec-analytics:
+          condition: service_healthy
+     kafka-1:
+       condition: service_healthy
+     kafka-2:
+       condition: service_healthy
+     kafka-3:
+       condition: service_healthy
     env_file:
       - .env
     environment:
