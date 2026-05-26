@@ -448,6 +448,19 @@ services:
         superset run -p 8088 -h 0.0.0.0
       "
 
+  rec-analytics-migrations:
+    container_name: rec-analytics-migrations
+    build:
+      context: ./recommendation-analytics
+      dockerfile: Dockerfile
+      target: migrations
+    env_file:
+      - .env
+    depends_on:
+      clickhouse-rec-analytics:
+        condition: service_healthy
+    restart: on-failure:3
+
 volumes:
   backend_postgres_data:
   backend_redis_data:

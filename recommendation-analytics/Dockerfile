@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-FROM base as app
+FROM base as migrations
 ENV PYTHONPATH=/app
 CMD ["python", "-m", "app.database.apply_schema"]
 
