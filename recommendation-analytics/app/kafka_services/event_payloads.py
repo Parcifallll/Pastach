@@ -23,6 +23,7 @@ class RecommendationReactedPayload(BaseModel):
 
 
 class RecommendationSentimentPayload(BaseModel):
+    userId: int
     postId: int
     commentText: str
 

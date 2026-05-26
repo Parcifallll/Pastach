@@ -73,7 +73,7 @@ public class CommentService {
         post.setCommentsCount(post.getCommentsCount() + 1);
         postRepository.save(post);
 
-        kafkaProducerService.sendRecommendationSentimentUpdated(comment.getPost().getId(), comment.getText());
+        kafkaProducerService.sendRecommendationSentimentUpdated(comment.getPost().getId(), comment.getAuthorId(), comment.getText());
 
         return commentMapper.toResponseDto(comment);
     }
@@ -104,7 +104,7 @@ public class CommentService {
 
         commentMapper.updateFromDto(dto, comment);
         comment = commentRepository.save(comment);
-        kafkaProducerService.sendRecommendationSentimentUpdated(comment.getPost().getId(), comment.getText());
+        kafkaProducerService.sendRecommendationSentimentUpdated(comment.getPost().getId(), comment.getAuthorId(), comment.getText());
 
         return commentMapper.toResponseDto(comment);
     }
@@ -129,7 +129,7 @@ public class CommentService {
 
         comment.setDeletedAt(Instant.now());
         commentRepository.save(comment);
-        kafkaProducerService.sendRecommendationSentimentUpdated(comment.getPost().getId(), comment.getText());
+        kafkaProducerService.sendRecommendationSentimentUpdated(comment.getPost().getId(), comment.getAuthorId(), comment.getText());
 
         // count only active comments
         Post post = comment.getPost();

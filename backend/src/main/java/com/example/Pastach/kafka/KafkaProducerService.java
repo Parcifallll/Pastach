@@ -239,9 +239,9 @@ public class KafkaProducerService {
         }
     }
 
-    public void sendRecommendationSentimentUpdated(Long postId, String commentText) {
+    public void sendRecommendationSentimentUpdated(Long postId, Long userId, String commentText) {
         try {
-            RecommendationSentimentUpdatedEvent event = RecommendationSentimentUpdatedEvent.from(postId, commentText);
+            RecommendationSentimentUpdatedEvent event = RecommendationSentimentUpdatedEvent.from(postId, userId, commentText);
             // all sentiment updates for same post go to same partition
             String key = postId.toString();
 
