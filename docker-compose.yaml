@@ -282,7 +282,7 @@ services:
       KAFKA_LOG_RETENTION_HOURS: 168
 
       # Auto create topics
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
       # Leader rebalancing
       KAFKA_AUTO_LEADER_REBALANCE_ENABLE: "true"

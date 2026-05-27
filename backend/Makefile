@@ -108,3 +108,11 @@ tasklist:
 
 kill:
 	@taskkill /PID "$(filter-out $@,$(MAKECMDGOALS))" /F
+
+kafka-describe:
+	docker compose exec kafka-1 kafka-topics --describe --topic pastach.posts,pastach.reactions,pastach.recommendations --bootstrap-server kafka-1:9092,kafka-2:9093,kafka-3:9094
+
+delete-topics:
+	docker compose exec kafka-1 kafka-topics --delete \
+      --topic pastach.posts,pastach.reactions,pastach.recommendations \
+      --bootstrap-server kafka-1:9092

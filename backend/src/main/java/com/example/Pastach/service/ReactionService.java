@@ -60,7 +60,6 @@ public class ReactionService {
                 reactionRepository.delete(r);
                 if (targetType == ReactionTargetType.POST) {
                     kafkaProducer.sendReactionDeleted(r.getId(), authorId);
-                    kafkaProducer.sendRecommendationReacted(user.getId(), targetId, type);
                 }
             } else {
                 // another type - update reaction
@@ -80,6 +79,7 @@ public class ReactionService {
         // new reaction
         if (isNewReaction && targetType == ReactionTargetType.POST) {
             kafkaProducer.sendReactionCreated(savedReaction);
+            kafkaProducer.sendRecommendationReacted(user.getId(), targetId, type);
         }
     }
 
