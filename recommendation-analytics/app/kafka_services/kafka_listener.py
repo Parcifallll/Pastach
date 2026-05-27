@@ -6,10 +6,12 @@ from kafka.errors import KafkaError
 
 from app.config import settings
 from app.database.clickhouse_client import ClickHouseClient
+from app.services.comment_sentiment_service import SentimentService
 from .event_payloads import (
     RecommendationCreatedPayload,
     RecommendationViewedPayload,
     RecommendationReactedPayload,
+    RecommendationSentimentPayload,
     RecommendationEvent
 )
 
@@ -21,6 +23,7 @@ class RecommendationAnalyticsListener:
 
     def __init__(self):
         self.clickhouse_client = ClickHouseClient()
+        self.sentiment_service = SentimentService()
         self.consumer = None
 
     def start(self):
@@ -62,7 +65,8 @@ class RecommendationAnalyticsListener:
                 payload = RecommendationReactedPayload(**event_obj.payload)
                 self._handle_recommendation_reacted(payload)
             elif event_type == 'recommendation.sentiment.updated':
-                logger.info("Sentiment event received (handled by separate service)")
+                payload = RecommendationSentimentPayload(**event_obj.payload)
+                self._handle_recommendation_sentiment(payload)
             else:
                 logger.warning(f"Unknown event type: {event_type}")
 
@@ -99,4 +103,21 @@ class RecommendationAnalyticsListener:
             user_id=payload.userId,
             post_id=payload.postId,
             reaction=payload.reaction
+        )
+
+    def _handle_recommendation_sentiment(self, payload: RecommendationSentimentPayload):
+        logger.info(f"Sentiment update: user={payload.userId}, post={payload.postId}")
+        s_new = self.sentiment_service.compute_score(payload.commentText)
+        old_score = self.clickhouse_client.get_sentiment_score(
+            user_id=payload.userId,
+            post_id=payload.postId
+        )
+
+        # EMA: new_score = alpha * s_new + (1 - alpha) * old_score
+        new_score = settings.EMA_ALPHA * s_new + (1 - settings.EMA_ALPHA) * old_score
+
+        self.clickhouse_client.update_recommendation_sentiment(
+            user_id=payload.userId,
+            post_id=payload.postId,
+            weighted_sentiment_score=new_score
         )

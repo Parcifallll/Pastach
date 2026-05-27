@@ -109,6 +109,20 @@ class ClickHouseClient:
             logger.error(f"Error updating reaction: {e}", exc_info=True)
             raise
 
+    def get_sentiment_score(self, user_id: int, post_id: int) -> float:
+        try:
+            result = self.client.query(
+                f"SELECT weighted_sentiment_score FROM viewed_posts "
+                f"WHERE user_id = {user_id} AND post_id = {post_id} LIMIT 1"
+            )
+            if result.result_rows:
+                value = result.result_rows[0][0]
+                return float(value) if value is not None else 0.0
+            return 0.0
+        except Exception as e:
+            logger.error(f"Error reading sentiment score: {e}", exc_info=True)
+            return 0.0
+
     def update_recommendation_sentiment(
             self,
             user_id: int,
@@ -124,7 +138,7 @@ class ClickHouseClient:
 
             self.client.command(query)
 
-            logger.info(f"Updated sentiment: user={user_id}, post={post_id}")
+            logger.info(f"Updated sentiment: user={user_id}, post={post_id}, score={weighted_sentiment_score}")
 
         except Exception as e:
             logger.error(f"Error updating sentiment: {e}", exc_info=True)

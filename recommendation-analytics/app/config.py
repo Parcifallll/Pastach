@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     KAFKA_AUTO_OFFSET_RESET: str = "earliest"
     KAFKA_TOPIC: str = "pastach.recommendations"
 
+    EMA_ALPHA: float = 0.3
+
     class Config:
         env_file = os.getenv("ENV_FILE", ".env.local")
         case_sensitive = True
