@@ -62,6 +62,39 @@ class ClickHouseClient:
             logger.error(f"Error inserting: {e}", exc_info=True)
             raise
 
+    def get_row(self, user_id: int, post_id: int) -> dict | None:
+        try:
+            result = self.client.query(
+                f"""
+                SELECT
+                    is_recommended,
+                    viewed_at,
+                    view_duration,
+                    reaction,
+                    weighted_sentiment_score,
+                    similarity_score,
+                    recency_score
+                FROM viewed_posts
+                WHERE user_id = {user_id} AND post_id = {post_id}
+                LIMIT 1
+                """
+            )
+            if not result.result_rows:
+                return None
+            row = result.result_rows[0]
+            return {
+                "is_recommended":          row[0],
+                "viewed_at":               row[1],
+                "view_duration":           row[2],
+                "reaction":                row[3],
+                "weighted_sentiment_score": row[4],
+                "similarity_score":        row[5],
+                "recency_score":           row[6],
+            }
+        except Exception as e:
+            logger.error(f"Error reading row: {e}", exc_info=True)
+            return None
+
     def update_recommendation_view(
             self,
             user_id: int,
@@ -74,7 +107,7 @@ class ClickHouseClient:
 
             query = f"""
                 ALTER TABLE viewed_posts
-                UPDATE 
+                UPDATE
                     viewed_at = '{viewed_at_dt.strftime('%Y-%m-%d %H:%M:%S')}',
                     view_duration = {view_duration}
                 WHERE user_id = {user_id} AND post_id = {post_id}
@@ -142,4 +175,25 @@ class ClickHouseClient:
 
         except Exception as e:
             logger.error(f"Error updating sentiment: {e}", exc_info=True)
+            raise
+
+    def update_engagement_score(
+            self,
+            user_id: int,
+            post_id: int,
+            engagement_score: float
+    ):
+        try:
+            query = f"""
+                ALTER TABLE viewed_posts
+                UPDATE engagement_score = {engagement_score}
+                WHERE user_id = {user_id} AND post_id = {post_id}
+            """
+
+            self.client.command(query)
+
+            logger.info(f"Updated engagement: user={user_id}, post={post_id}, score={engagement_score}")
+
+        except Exception as e:
+            logger.error(f"Error updating engagement: {e}", exc_info=True)
             raise

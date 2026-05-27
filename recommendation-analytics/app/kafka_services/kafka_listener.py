@@ -6,7 +6,8 @@ from kafka.errors import KafkaError
 
 from app.config import settings
 from app.database.clickhouse_client import ClickHouseClient
-from app.services.comment_sentiment_service import SentimentService
+from app.services.comment_sentiment_service  import SentimentService
+from app.services.engagement_service import EngagementService, PostRow
 from .event_payloads import (
     RecommendationCreatedPayload,
     RecommendationViewedPayload,
@@ -24,6 +25,7 @@ class RecommendationAnalyticsListener:
     def __init__(self):
         self.clickhouse_client = ClickHouseClient()
         self.sentiment_service = SentimentService()
+        self.engagement_service = EngagementService()
         self.consumer = None
 
     def start(self):
@@ -96,6 +98,8 @@ class RecommendationAnalyticsListener:
             view_duration=payload.viewDuration
         )
 
+        self._recalculate_engagement(payload.userId, payload.postId)
+
     def _handle_recommendation_reacted(self, payload: RecommendationReactedPayload):
         logger.info(f"Reacted: user={payload.userId}, post={payload.postId}")
 
@@ -104,6 +108,8 @@ class RecommendationAnalyticsListener:
             post_id=payload.postId,
             reaction=payload.reaction
         )
+
+        self._recalculate_engagement(payload.userId, payload.postId)
 
     def _handle_recommendation_sentiment(self, payload: RecommendationSentimentPayload):
         logger.info(f"Sentiment update: user={payload.userId}, post={payload.postId}")
@@ -120,4 +126,30 @@ class RecommendationAnalyticsListener:
             user_id=payload.userId,
             post_id=payload.postId,
             weighted_sentiment_score=new_score
+        )
+
+        self._recalculate_engagement(payload.userId, payload.postId)
+
+    def _recalculate_engagement(self, user_id: int, post_id: int):
+        row_data = self.clickhouse_client.get_row(user_id, post_id)
+        if row_data is None:
+            logger.warning(f"Row not found for engagement recalc: user={user_id}, post={post_id}")
+            return
+
+        post_row = PostRow(
+            is_recommended=row_data["is_recommended"],
+            viewed_at=row_data["viewed_at"],
+            view_duration=row_data["view_duration"],
+            reaction=row_data["reaction"],
+            weighted_sentiment_score=row_data["weighted_sentiment_score"] or 0.0,
+            similarity_score=row_data["similarity_score"],
+            recency_score=row_data["recency_score"],
+        )
+
+        engagement_score = self.engagement_service.compute(post_row)
+
+        self.clickhouse_client.update_engagement_score(
+            user_id=user_id,
+            post_id=post_id,
+            engagement_score=engagement_score
         )
