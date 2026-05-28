@@ -116,3 +116,12 @@ delete-topics:
 	docker compose exec kafka-1 kafka-topics --delete \
       --topic pastach.posts,pastach.reactions,pastach.recommendations \
       --bootstrap-server kafka-1:9092
+
+# before bash scripts for analytics (+refresh increment)
+#TRUNCATE TABLE posts RESTART IDENTITY CASCADE;
+#TRUNCATE TABLE comments RESTART IDENTITY CASCADE;
+#TRUNCATE TABLE reactions RESTART IDENTITY CASCADE;
+
+#TRUNCATE TABLE posts_ml RESTART IDENTITY CASCADE;
+#TRUNCATE TABLE reactions_ml RESTART IDENTITY CASCADE;
+#TRUNCATE TABLE user_preferences RESTART IDENTITY CASCADE;

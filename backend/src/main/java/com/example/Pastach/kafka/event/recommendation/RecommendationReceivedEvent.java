@@ -25,7 +25,7 @@ public class RecommendationReceivedEvent {
         private Long userId;
         private Long postId;
         private Long authorId;
-        private Instant createdAt;
+        private String createdAt;
         private Double similarityScore;
         private Double recencyScore;
     }
@@ -35,7 +35,7 @@ public class RecommendationReceivedEvent {
                 userId,
                 dto.id(),
                 dto.authorId(),
-                dto.createdAt(),
+                dto.createdAt().toString(),
                 dto.similarityScore(),
                 dto.recencyScore()
         );

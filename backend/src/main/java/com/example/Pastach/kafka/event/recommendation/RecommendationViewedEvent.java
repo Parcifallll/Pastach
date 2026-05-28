@@ -1,5 +1,6 @@
 package com.example.Pastach.kafka.event.recommendation;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,15 +24,19 @@ public class RecommendationViewedEvent {
     public static class RecommendationViewedPayload {
         private Long userId;
         private Long postId;
-        private Instant viewedAt;
+        private Long authorId;
+        private String viewedAt;
+        private String createdAt;
         private Double viewDuration;
     }
 
-    public static RecommendationViewedEvent from(Long userId, Long postId, Instant viewedAt, Double viewDuration) {
+    public static RecommendationViewedEvent from(Long userId, Long postId, Long authorId, Instant viewedAt, Instant createdAt, Double viewDuration) {
         RecommendationViewedPayload payload = new RecommendationViewedPayload(
                 userId,
                 postId,
-                viewedAt,
+                authorId,
+                viewedAt.toString(),
+                createdAt.toString(),
                 viewDuration
         );
 

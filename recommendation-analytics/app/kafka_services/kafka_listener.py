@@ -94,7 +94,9 @@ class RecommendationAnalyticsListener:
         self.clickhouse_client.update_recommendation_view(
             user_id=payload.userId,
             post_id=payload.postId,
+            author_id=payload.authorId,
             viewed_at=payload.viewedAt,
+            created_at=payload.createdAt,
             view_duration=payload.viewDuration
         )
 

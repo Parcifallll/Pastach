@@ -4,5 +4,7 @@ import java.time.Instant;
 
 public record RecommendationViewReportDTO(
     Instant viewedAt,
-    Double viewDuration  // seconds
+    Double viewDuration,  // seconds
+    Instant createdAt,
+    Long authorId
 ) {}

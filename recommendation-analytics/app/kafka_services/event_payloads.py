@@ -12,7 +12,9 @@ class RecommendationCreatedPayload(BaseModel):
 class RecommendationViewedPayload(BaseModel):
     userId: int
     postId: int
+    authorId: int
     viewedAt: str
+    createdAt: str
     viewDuration: float
 
 

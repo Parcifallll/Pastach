@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import clickhouse_connect
 
 from app.config import settings
@@ -99,23 +99,53 @@ class ClickHouseClient:
             self,
             user_id: int,
             post_id: int,
+            author_id: int,
             viewed_at: str,
+            created_at: str,
             view_duration: float
     ):
         try:
             viewed_at_dt = datetime.fromisoformat(viewed_at.replace('Z', '+00:00'))
+            created_at_dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
 
-            query = f"""
+            existing = self.get_row(user_id, post_id)
+            logger.info(f"existing raw: {existing}")
+
+            if existing is None:
+                data = [(
+                    user_id,
+                    post_id,
+                    author_id,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    created_at_dt,
+                    viewed_at_dt,
+                    view_duration,
+                    None,
+                    False
+                )]
+                self.client.insert(
+                    table='viewed_posts',
+                    data=data,
+                    column_names=[
+                        'user_id', 'post_id', 'author_id', 'similarity_score',
+                        'recency_score', 'engagement_score', 'weighted_sentiment_score',
+                        'created_at', 'viewed_at', 'view_duration', 'reaction', 'is_recommended'
+                    ]
+                )
+                logger.info(f"Inserted new view (non-recommended): user={user_id}, post={post_id}")
+            else:
+                query = f"""
                 ALTER TABLE viewed_posts
                 UPDATE
                     viewed_at = '{viewed_at_dt.strftime('%Y-%m-%d %H:%M:%S')}',
                     view_duration = {view_duration}
                 WHERE user_id = {user_id} AND post_id = {post_id}
             """
-
-            self.client.command(query)
-
-            logger.info(f"Updated view: user={user_id}, post={post_id}")
+                self.client.command(query)
+                logger.info(f"Updated view: user={user_id}, post={post_id}")
 
         except Exception as e:
             logger.error(f"Error updating view: {e}", exc_info=True)

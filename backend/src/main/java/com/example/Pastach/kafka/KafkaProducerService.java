@@ -193,9 +193,9 @@ public class KafkaProducerService {
         }
     }
 
-    public void sendRecommendationViewed(Long userId, Long postId, Instant viewedAt, Double viewDuration) {
+    public void sendRecommendationViewed(Long userId, Long postId, Long authorId, Instant viewedAt, Instant createdAt, Double viewDuration) {
         try {
-            RecommendationViewedEvent event = RecommendationViewedEvent.from(userId, postId, viewedAt, viewDuration);
+            RecommendationViewedEvent event = RecommendationViewedEvent.from(userId, postId, authorId, viewedAt, createdAt, viewDuration);
             String key = userId.toString();
 
             kafkaTemplate.send("pastach.recommendations", key, event)

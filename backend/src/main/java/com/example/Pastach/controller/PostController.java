@@ -397,7 +397,9 @@ public class PostController {
         recommendationAnalyticsService.logRecommendationViewed(
                 currentUser.getId(),
                 postId,
+                dto.authorId(),
                 dto.viewedAt(),
+                dto.createdAt(),
                 dto.viewDuration()
         );
 

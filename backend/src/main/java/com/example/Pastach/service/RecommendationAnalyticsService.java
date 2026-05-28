@@ -59,14 +59,14 @@ public class RecommendationAnalyticsService {
     }
 
     @Async
-    public void logRecommendationViewed(Long userId, Long postId, Instant viewedAt, Double viewDuration) {
+    public void logRecommendationViewed(Long userId, Long postId, Long authorId, Instant viewedAt, Instant createdAt, Double viewDuration) {
         try {
             if (!postRepository.existsById(postId)) {
                 log.warn("Post {} not found when logging view for user {}", postId, userId);
                 throw new PostNotFoundException(postId);
             }
 
-            kafkaProducer.sendRecommendationViewed(userId, postId, viewedAt, viewDuration);
+            kafkaProducer.sendRecommendationViewed(userId, postId, authorId, viewedAt, createdAt, viewDuration);
         } catch (Exception e) {
             log.error("Error logging recommendation view for user={}, post={}: {}",
                     userId, postId, e.getMessage(), e);
